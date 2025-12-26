@@ -1,0 +1,1837 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Suivi Traitements Phytosanitaires - Vignoble</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.23.5/babel.min.js"></script>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://accounts.google.com/gsi/client" async defer></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700&family=Source+Sans+3:wght@300;400;600;700&display=swap');
+        
+        body {
+            font-family: 'Source Sans 3', sans-serif;
+            background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+            min-height: 100vh;
+        }
+        
+        .header-title {
+            font-family: 'Playfair Display', serif;
+            background: linear-gradient(135deg, #34d399 0%, #10b981 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        
+        .card-glass {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+        }
+        
+        .btn-primary {
+            background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+            transition: all 0.3s ease;
+        }
+        
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(16, 185, 129, 0.4);
+        }
+        
+        .stat-card {
+            background: linear-gradient(135deg, #34d399 0%, #10b981 100%);
+            color: white;
+            border-radius: 1rem;
+            padding: 1.5rem;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        
+        .ilot-header {
+            background: linear-gradient(to right, #10b981, #059669);
+            color: white;
+            transition: all 0.3s ease;
+        }
+        
+        .ilot-header:hover {
+            transform: translateX(4px);
+        }
+        
+        .traitement-card {
+            border-left: 4px solid #10b981;
+            transition: all 0.3s ease;
+        }
+        
+        .traitement-card:hover {
+            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1);
+            transform: translateX(4px);
+        }
+        
+        .ift-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.25rem;
+            padding: 0.25rem 0.75rem;
+            border-radius: 0.375rem;
+            font-size: 0.75rem;
+            font-weight: 700;
+            background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+            color: white;
+        }
+        
+        input[type="date"]::-webkit-calendar-picker-indicator {
+            filter: invert(0.5);
+        }
+        
+        .toast {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: white;
+            padding: 1rem 1.5rem;
+            border-radius: 0.5rem;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+            animation: slideIn 0.3s ease;
+            z-index: 1000;
+        }
+        
+        .toast.error {
+            background: #fee2e2;
+            color: #991b1b;
+            border-left: 4px solid #dc2626;
+        }
+        
+        .toast.success {
+            background: white;
+            border-left: 4px solid #10b981;
+        }
+        
+        @keyframes slideIn {
+            from {
+                transform: translateX(400px);
+                opacity: 0;
+            }
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div id="root"></div>
+    <script type="text/babel">
+const { useState, useEffect } = React;
+
+// Icônes SVG
+const Download = ({ size = 20 }) => (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+        <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M7 10l5 5 5-5M12 15V3"/>
+    </svg>
+);
+
+const Upload = ({ size = 20 }) => (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+        <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M17 8l-5-5-5 5M12 3v12"/>
+    </svg>
+);
+
+const Plus = ({ size = 18 }) => (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+        <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
+    </svg>
+);
+
+const Trash2 = ({ size = 18 }) => (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+        <polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/>
+        <line x1="10" y1="11" x2="10" y2="17"/><line x1="14" y1="11" x2="14" y2="17"/>
+    </svg>
+);
+
+const Copy = ({ size = 16 }) => (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+        <rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/>
+    </svg>
+);
+
+const ChevronDown = ({ size = 24 }) => (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+        <polyline points="6 9 12 15 18 9"/>
+    </svg>
+);
+
+const ChevronUp = ({ size = 24 }) => (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+        <polyline points="18 15 12 9 6 15"/>
+    </svg>
+);
+
+const Save = ({ size = 20 }) => (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+        <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/>
+        <polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/>
+    </svg>
+);
+
+const Search = ({ size = 20 }) => (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+        <circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/>
+    </svg>
+);
+
+const Calendar = ({ size = 16 }) => (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+        <rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/>
+        <line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/>
+    </svg>
+);
+
+const AlertTriangle = ({ size = 16 }) => (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+        <path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"/>
+        <line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/>
+    </svg>
+);
+
+const CheckCircle = ({ size = 16 }) => (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+        <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/>
+    </svg>
+);
+
+const RefreshCw = ({ size = 20 }) => (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+        <polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/>
+        <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/>
+    </svg>
+);
+
+const Edit = ({ size = 20 }) => (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+        <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
+        <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
+    </svg>
+);
+
+const Settings = ({ size = 20 }) => (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+        <circle cx="12" cy="12" r="3"/><path d="M12 1v6m0 6v6m5.66-15.66l-4.24 4.24m-2.83 2.83L6.34 22.66M23 12h-6m-6 0H1m15.66 5.66l-4.24-4.24m-2.83-2.83L1.34 6.34"/>
+    </svg>
+);
+
+const Cloud = ({ size = 20 }) => (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+        <path d="M18 10h-1.26A8 8 0 1 0 9 20h9a5 5 0 0 0 0-10z"/>
+    </svg>
+);
+
+const CloudOff = ({ size = 20 }) => (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+        <path d="M22.61 16.95A5 5 0 0 0 18 10h-1.26a8 8 0 0 0-7.05-6M5 5a8 8 0 0 0 4 15h9a5 5 0 0 0 1.7-.3"/>
+        <line x1="1" y1="1" x2="23" y2="23"/>
+    </svg>
+);
+
+const PhytoTracker = () => {
+    const [annee, setAnnee] = useState(new Date().getFullYear());
+    const [searchTerm, setSearchTerm] = useState('');
+    const [toast, setToast] = useState(null);
+    
+    const ilots = [
+        { nom: 'Bommes', parcelles: [
+            'Droite', 'Gauche', 'Augey 1', 'Augey 2', '2x8', 'Sauvignon route', 
+            'Aromatique', 'Jardin', 'Pointe', 'Dumas grande', 'Plante 97', 'Pons',
+            'Mahon', 'Goulard vieille', 'Goulard plante', 'Bosquet vieille', 
+            'Bosquet plante', 'Trinquine route', 'Trinquine cerisier'
+        ]},
+        { nom: 'Preignac', parcelles: [
+            'Sensin', 'Mallet', 'Sauvignon mallet', 'Sauvignon hubert', 'Maison neuve 2 Ha'
+        ]},
+        { nom: 'Devant Chateaux', parcelles: [
+            'Centrale route', 'Centrale wc', 'WC Serge', 'Le mont', 'Pavillon'
+        ]},
+        { nom: 'Derrière Chateaux', parcelles: [
+            'Semillon/ Sauvignon/ Pointe', 'Plateau', 'Ex-Bordeaux', 'Ruine', 'Chemin', 'Ricaud'
+        ]},
+        { nom: 'Toulenne', parcelles: [
+            'Merlot', 'Cabernet'
+        ]},
+        { nom: 'Illats', parcelles: [
+            'Blanc', 'Pré', '6 rgs', '22 rgs', 'Cabernet franc (14)', 'CF 8'
+        ]},
+        { nom: 'Artigue', parcelles: [
+            'Merlot'
+        ]},
+        { nom: 'Portets', parcelles: [
+            'Merlot', 'Petit Verdot', 'Centre'
+        ]}
+    ];
+
+    // Base de données des produits avec leurs doses de référence pour le calcul de l'IFT
+    const produitsDisponibles = [
+        { nom: 'Bouillie Bordelaise', doseRef: 2000, unite: 'g/ha', categorie: 'Fongicide' },
+        { nom: 'Cuivre', doseRef: 1500, unite: 'g/ha', categorie: 'Fongicide' },
+        { nom: 'Soufre', doseRef: 5000, unite: 'g/ha', categorie: 'Fongicide' },
+        { nom: 'Mancozèbe', doseRef: 1600, unite: 'g/ha', categorie: 'Fongicide' },
+        { nom: 'Folpel', doseRef: 1200, unite: 'g/ha', categorie: 'Fongicide' },
+        { nom: 'Cymoxanil', doseRef: 150, unite: 'g/ha', categorie: 'Fongicide' },
+        { nom: 'Fénhexamide', doseRef: 500, unite: 'g/ha', categorie: 'Fongicide' },
+        { nom: 'Pyrimethanil', doseRef: 600, unite: 'g/ha', categorie: 'Fongicide' },
+        { nom: 'Switch', doseRef: 1000, unite: 'g/ha', categorie: 'Fongicide' },
+        { nom: 'Luna Privilege', doseRef: 400, unite: 'g/ha', categorie: 'Fongicide' },
+        { nom: 'Talendo', doseRef: 200, unite: 'g/ha', categorie: 'Fongicide' },
+        { nom: 'Flint Max', doseRef: 375, unite: 'g/ha', categorie: 'Fongicide' },
+        { nom: 'Systhane', doseRef: 175, unite: 'ml/ha', categorie: 'Fongicide' },
+        { nom: 'Amistar', doseRef: 400, unite: 'ml/ha', categorie: 'Fongicide' },
+        { nom: 'Quadris', doseRef: 800, unite: 'ml/ha', categorie: 'Fongicide' },
+        { nom: 'Confidor', doseRef: 200, unite: 'ml/ha', categorie: 'Insecticide' },
+        { nom: 'Closer', doseRef: 240, unite: 'ml/ha', categorie: 'Insecticide' },
+        { nom: 'Success 4', doseRef: 600, unite: 'ml/ha', categorie: 'Insecticide' },
+        { nom: 'Belt', doseRef: 150, unite: 'ml/ha', categorie: 'Insecticide' },
+        { nom: 'Movento', doseRef: 750, unite: 'ml/ha', categorie: 'Insecticide' },
+        { nom: 'Karaté Xpress', doseRef: 400, unite: 'ml/ha', categorie: 'Insecticide' },
+        { nom: 'Decis Expert', doseRef: 625, unite: 'ml/ha', categorie: 'Insecticide' },
+        { nom: 'Callisto', doseRef: 300, unite: 'ml/ha', categorie: 'Herbicide' },
+        { nom: 'Prowl 400', doseRef: 3000, unite: 'ml/ha', categorie: 'Herbicide' },
+        { nom: 'Spotlight Plus', doseRef: 2000, unite: 'ml/ha', categorie: 'Herbicide' },
+        { nom: 'Kerb Flo', doseRef: 1500, unite: 'ml/ha', categorie: 'Herbicide' },
+        { nom: 'Glyphosate', doseRef: 3000, unite: 'ml/ha', categorie: 'Herbicide' },
+        { nom: 'Basta F1', doseRef: 3000, unite: 'ml/ha', categorie: 'Herbicide' },
+        { nom: 'Roundup', doseRef: 3000, unite: 'ml/ha', categorie: 'Herbicide' },
+        { nom: 'Challenge 600', doseRef: 300, unite: 'ml/ha', categorie: 'Herbicide' }
+    ];
+
+    const initParcelles = () => {
+        let parcelles = [];
+        let id = 1;
+        ilots.forEach(ilot => {
+            if (ilot.parcelles) {
+                // Parcelles avec noms personnalisés
+                ilot.parcelles.forEach(nomParcelle => {
+                    parcelles.push({
+                        id: id++,
+                        ilot: ilot.nom,
+                        nom: nomParcelle,
+                        surface: '',
+                        traitements: []
+                    });
+                });
+            } else {
+                // Parcelles avec numérotation automatique
+                for (let i = 1; i <= ilot.nbParcelles; i++) {
+                    parcelles.push({
+                        id: id++,
+                        ilot: ilot.nom,
+                        nom: `${ilot.nom} ${i}`,
+                        surface: '',
+                        traitements: []
+                    });
+                }
+            }
+        });
+        return parcelles;
+    };
+
+    // Chargement des données depuis localStorage
+    const loadData = () => {
+        try {
+            const saved = localStorage.getItem(`phyto_${annee}`);
+            if (saved) {
+                const data = JSON.parse(saved);
+                return {
+                    parcelles: data.parcelles || initParcelles(),
+                    operateurs: data.operateurs || ['', ''],
+                    machines: data.machines || [
+                        { nom: '', debit: '', vitesse: '' },
+                        { nom: '', debit: '', vitesse: '' },
+                        { nom: '', debit: '', vitesse: '' }
+                    ]
+                };
+            }
+        } catch (e) {
+            console.error('Erreur chargement:', e);
+        }
+        return {
+            parcelles: initParcelles(),
+            operateurs: ['', ''],
+            machines: [
+                { nom: '', debit: '', vitesse: '' },
+                { nom: '', debit: '', vitesse: '' },
+                { nom: '', debit: '', vitesse: '' }
+            ]
+        };
+    };
+
+    const [parcelles, setParcelles] = useState(loadData().parcelles);
+    const [operateurs, setOperateurs] = useState(loadData().operateurs);
+    const [machines, setMachines] = useState(loadData().machines);
+
+    const [showCopyModal, setShowCopyModal] = useState(false);
+    const [traitementACopier, setTraitementACopier] = useState(null);
+    const [parcellesSelectionnees, setParcellesSelectionnees] = useState([]);
+    const [ilotsOuverts, setIlotsOuverts] = useState(ilots.map(i => i.nom));
+    const [showGestionParcelles, setShowGestionParcelles] = useState(false);
+    const [googleDriveConnected, setGoogleDriveConnected] = useState(false);
+    const [googleAccessToken, setGoogleAccessToken] = useState(null);
+    const [autoSyncEnabled, setAutoSyncEnabled] = useState(false);
+    const [sharedFolderId, setSharedFolderId] = useState(null);
+
+    // Sauvegarde automatique
+    useEffect(() => {
+        const data = { parcelles, operateurs, machines };
+        localStorage.setItem(`phyto_${annee}`, JSON.stringify(data));
+    }, [parcelles, operateurs, machines, annee]);
+
+    // Toast notification
+    const showToast = (message, type = 'success') => {
+        setToast({ message, type });
+        setTimeout(() => setToast(null), 3000);
+    };
+
+    // Changement d'année
+    const changerAnnee = (nouvelleAnnee) => {
+        setAnnee(nouvelleAnnee);
+        const data = loadData();
+        setParcelles(data.parcelles);
+        setOperateurs(data.operateurs);
+        setMachines(data.machines);
+    };
+
+    // Réinitialiser les parcelles
+    const reinitialiserParcelles = () => {
+        if (confirm('⚠️ ATTENTION : Cette action va réinitialiser toutes les parcelles avec les nouveaux noms et SUPPRIMER tous les traitements enregistrés.\n\nFaites un export CSV avant si vous voulez conserver vos données.\n\nContinuer ?')) {
+            localStorage.removeItem(`phyto_${annee}`);
+            setParcelles(initParcelles());
+            setOperateurs(['', '']);
+            setMachines([
+                { nom: '', debit: '', vitesse: '' },
+                { nom: '', debit: '', vitesse: '' },
+                { nom: '', debit: '', vitesse: '' }
+            ]);
+            showToast('Parcelles réinitialisées avec les nouveaux noms !');
+        }
+    };
+
+    // Ajouter une parcelle
+    const ajouterParcelle = (ilot) => {
+        const nouveauNom = prompt(`Nom de la nouvelle parcelle pour ${ilot} :`);
+        if (nouveauNom && nouveauNom.trim()) {
+            const maxId = Math.max(...parcelles.map(p => p.id), 0);
+            const nouvelleParcelle = {
+                id: maxId + 1,
+                ilot: ilot,
+                nom: nouveauNom.trim(),
+                surface: '',
+                traitements: []
+            };
+            setParcelles([...parcelles, nouvelleParcelle]);
+            showToast(`Parcelle "${nouveauNom}" ajoutée à ${ilot}`);
+        }
+    };
+
+    // Modifier le nom d'une parcelle
+    const modifierNomParcelle = (parcelleId) => {
+        const parcelle = parcelles.find(p => p.id === parcelleId);
+        if (!parcelle) return;
+        
+        const nouveauNom = prompt(`Nouveau nom pour "${parcelle.nom}" :`, parcelle.nom);
+        if (nouveauNom && nouveauNom.trim() && nouveauNom !== parcelle.nom) {
+            setParcelles(parcelles.map(p => 
+                p.id === parcelleId ? { ...p, nom: nouveauNom.trim() } : p
+            ));
+            showToast(`Parcelle renommée en "${nouveauNom}"`);
+        }
+    };
+
+    // Supprimer une parcelle
+    const supprimerParcelle = (parcelleId) => {
+        const parcelle = parcelles.find(p => p.id === parcelleId);
+        if (!parcelle) return;
+        
+        const nbTraitements = parcelle.traitements.length;
+        const message = nbTraitements > 0 
+            ? `⚠️ Supprimer la parcelle "${parcelle.nom}" ?\n\nCette parcelle contient ${nbTraitements} traitement(s) qui seront également supprimés.`
+            : `Supprimer la parcelle "${parcelle.nom}" ?`;
+        
+        if (confirm(message)) {
+            setParcelles(parcelles.filter(p => p.id !== parcelleId));
+            showToast(`Parcelle "${parcelle.nom}" supprimée`);
+        }
+    };
+
+    // ========== GOOGLE DRIVE SYNC ==========
+    const CLIENT_ID = '447944911998-ranpvgutp8qvtr7m6mkrlr0t28a8f81e.apps.googleusercontent.com';
+    const DISCOVERY_DOC = 'https://www.googleapis.com/discovery/v1/apis/drive/v3/rest';
+    const SCOPES = 'https://www.googleapis.com/auth/drive.file';
+    const SHARED_FOLDER_NAME = 'Registre_Phytosanitaire_Partage'; // Nom du dossier partagé
+
+    // Connexion à Google Drive
+    const connecterGoogleDrive = () => {
+        try {
+            const tokenClient = google.accounts.oauth2.initTokenClient({
+                client_id: CLIENT_ID,
+                scope: SCOPES,
+                callback: (response) => {
+                    if (response.access_token) {
+                        setGoogleAccessToken(response.access_token);
+                        setGoogleDriveConnected(true);
+                        showToast('✅ Connecté à Google Drive !');
+                        
+                        // Initialiser le dossier de manière asynchrone après la connexion
+                        setTimeout(() => {
+                            initialiserDossierPartage(response.access_token);
+                            chargerDepuisDrive(response.access_token);
+                        }, 100);
+                    }
+                },
+            });
+            tokenClient.requestAccessToken();
+        } catch (error) {
+            console.error('Erreur connexion:', error);
+            showToast('Erreur lors de la connexion', 'error');
+        }
+    };
+
+    // Déconnexion de Google Drive
+    const deconnecterGoogleDrive = () => {
+        if (googleAccessToken) {
+            google.accounts.oauth2.revoke(googleAccessToken);
+            setGoogleAccessToken(null);
+            setGoogleDriveConnected(false);
+            setAutoSyncEnabled(false);
+            setSharedFolderId(null);
+            showToast('Déconnecté de Google Drive');
+        }
+    };
+
+    // Initialiser le dossier partagé
+    const initialiserDossierPartage = async (token) => {
+        try {
+            // Chercher si le dossier existe déjà
+            const searchResponse = await fetch(
+                `https://www.googleapis.com/drive/v3/files?q=name='${SHARED_FOLDER_NAME}' and mimeType='application/vnd.google-apps.folder' and trashed=false`,
+                {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                }
+            );
+            
+            const searchData = await searchResponse.json();
+            
+            if (searchData.files && searchData.files.length > 0) {
+                // Dossier trouvé
+                setSharedFolderId(searchData.files[0].id);
+                console.log('Dossier partagé trouvé:', searchData.files[0].id);
+            } else {
+                // Créer le dossier
+                const createResponse = await fetch(
+                    'https://www.googleapis.com/drive/v3/files',
+                    {
+                        method: 'POST',
+                        headers: {
+                            'Authorization': `Bearer ${token}`,
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({
+                            name: SHARED_FOLDER_NAME,
+                            mimeType: 'application/vnd.google-apps.folder'
+                        })
+                    }
+                );
+                
+                const createData = await createResponse.json();
+                setSharedFolderId(createData.id);
+                console.log('Dossier partagé créé:', createData.id);
+                
+                showToast('📁 Dossier partagé créé dans Google Drive');
+            }
+        } catch (error) {
+            console.error('Erreur initialisation dossier:', error);
+            showToast('Erreur lors de l\'initialisation du dossier', 'error');
+        }
+    };
+
+    // Charger les données depuis Google Drive
+    const chargerDepuisDrive = async (token) => {
+        try {
+            // Chercher le fichier de données de l'année en cours
+            const fileName = `Phyto_${annee}.json`;
+            const searchResponse = await fetch(
+                `https://www.googleapis.com/drive/v3/files?q=name='${fileName}' and trashed=false`,
+                {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                }
+            );
+            
+            const searchData = await searchResponse.json();
+            
+            if (searchData.files && searchData.files.length > 0) {
+                // Télécharger le fichier
+                const fileId = searchData.files[0].id;
+                const downloadResponse = await fetch(
+                    `https://www.googleapis.com/drive/v3/files/${fileId}?alt=media`,
+                    {
+                        headers: { 'Authorization': `Bearer ${token}` }
+                    }
+                );
+                
+                const data = await downloadResponse.json();
+                
+                // Charger les données
+                if (data.parcelles) setParcelles(data.parcelles);
+                if (data.operateurs) setOperateurs(data.operateurs);
+                if (data.machines) setMachines(data.machines);
+                
+                showToast('📥 Données chargées depuis Google Drive');
+            }
+        } catch (error) {
+            console.error('Erreur chargement depuis Drive:', error);
+            // Pas de toast d'erreur si le fichier n'existe pas encore
+        }
+    };
+
+    // Sauvegarder sur Google Drive (dossier partagé)
+    const sauvegarderSurDrive = async () => {
+        if (!googleAccessToken || !sharedFolderId) {
+            showToast('Connectez-vous d\'abord à Google Drive', 'error');
+            return;
+        }
+
+        try {
+            const data = { 
+                parcelles, 
+                operateurs, 
+                machines,
+                lastUpdate: new Date().toISOString(),
+                updatedBy: 'user' // Vous pouvez ajouter le nom de l'utilisateur ici
+            };
+            const jsonData = JSON.stringify(data, null, 2);
+            const fileName = `Phyto_${annee}.json`;
+            
+            // Chercher si le fichier existe déjà
+            const searchResponse = await fetch(
+                `https://www.googleapis.com/drive/v3/files?q=name='${fileName}' and '${sharedFolderId}' in parents and trashed=false`,
+                {
+                    headers: { 'Authorization': `Bearer ${googleAccessToken}` }
+                }
+            );
+            
+            const searchData = await searchResponse.json();
+            
+            if (searchData.files && searchData.files.length > 0) {
+                // Mettre à jour le fichier existant
+                const fileId = searchData.files[0].id;
+                
+                const form = new FormData();
+                form.append('metadata', new Blob([JSON.stringify({ name: fileName })], { type: 'application/json' }));
+                form.append('file', new Blob([jsonData], { type: 'application/json' }));
+
+                const response = await fetch(
+                    `https://www.googleapis.com/upload/drive/v3/files/${fileId}?uploadType=multipart`,
+                    {
+                        method: 'PATCH',
+                        headers: {
+                            'Authorization': `Bearer ${googleAccessToken}`
+                        },
+                        body: form
+                    }
+                );
+
+                if (response.ok) {
+                    showToast('✅ Synchronisé avec Google Drive');
+                } else {
+                    throw new Error('Erreur de mise à jour');
+                }
+            } else {
+                // Créer un nouveau fichier
+                const metadata = {
+                    name: fileName,
+                    mimeType: 'application/json',
+                    parents: [sharedFolderId]
+                };
+
+                const form = new FormData();
+                form.append('metadata', new Blob([JSON.stringify(metadata)], { type: 'application/json' }));
+                form.append('file', new Blob([jsonData], { type: 'application/json' }));
+
+                const response = await fetch(
+                    'https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart',
+                    {
+                        method: 'POST',
+                        headers: {
+                            'Authorization': `Bearer ${googleAccessToken}`
+                        },
+                        body: form
+                    }
+                );
+
+                if (response.ok) {
+                    showToast('✅ Sauvegardé sur Google Drive');
+                } else {
+                    throw new Error('Erreur de sauvegarde');
+                }
+            }
+        } catch (error) {
+            console.error('Erreur Google Drive:', error);
+            showToast('❌ Erreur lors de la sauvegarde', 'error');
+        }
+    };
+
+    // Recharger les données depuis Drive manuellement
+    const rechargerDepuisDrive = async () => {
+        if (!googleAccessToken) {
+            showToast('Connectez-vous d\'abord à Google Drive', 'error');
+            return;
+        }
+        
+        await chargerDepuisDrive(googleAccessToken);
+    };
+
+    // Auto-sync toutes les 5 minutes
+    useEffect(() => {
+        if (autoSyncEnabled && googleDriveConnected && sharedFolderId) {
+            const interval = setInterval(() => {
+                sauvegarderSurDrive();
+            }, 5 * 60 * 1000); // 5 minutes
+
+            return () => clearInterval(interval);
+        }
+    }, [autoSyncEnabled, googleDriveConnected, sharedFolderId, parcelles, operateurs, machines]);
+
+    // Sauvegarder automatiquement à chaque modification si auto-sync est activé
+    useEffect(() => {
+        if (autoSyncEnabled && googleDriveConnected && sharedFolderId) {
+            const timeoutId = setTimeout(() => {
+                sauvegarderSurDrive();
+            }, 2000); // Attend 2 secondes après la dernière modification
+
+            return () => clearTimeout(timeoutId);
+        }
+    }, [parcelles, operateurs, machines]);
+
+    // Calcul de l'IFT pour un produit
+    const calculerIFT = (produit, doseUtilisee) => {
+        if (!produit || !doseUtilisee) return 0;
+        
+        const produitInfo = produitsDisponibles.find(p => p.nom === produit);
+        if (!produitInfo || !produitInfo.doseRef) return 0;
+        
+        // Extraire la valeur numérique de la dose utilisée
+        const doseNum = parseFloat(doseUtilisee);
+        if (isNaN(doseNum)) return 0;
+        
+        // IFT = dose utilisée / dose de référence
+        const ift = doseNum / produitInfo.doseRef;
+        return ift;
+    };
+
+    // Calcul de l'IFT total pour un traitement
+    const calculerIFTTraitement = (produits) => {
+        let iftTotal = 0;
+        produits.forEach(p => {
+            iftTotal += calculerIFT(p.produit, p.doseHa);
+        });
+        return iftTotal;
+    };
+
+    // Calculs statistiques
+    const calculerStatistiques = () => {
+        let surfaceTotale = 0;
+        let nbTraitements = 0;
+        let iftTotal = 0;
+        const produitUtilises = {};
+        
+        parcelles.forEach(p => {
+            if (p.surface) surfaceTotale += parseFloat(p.surface) || 0;
+            nbTraitements += p.traitements.length;
+            
+            p.traitements.forEach(t => {
+                // Calcul IFT du traitement
+                iftTotal += calculerIFTTraitement(t.produits);
+                
+                t.produits.forEach(pr => {
+                    if (pr.produit) {
+                        if (!produitUtilises[pr.produit]) {
+                            produitUtilises[pr.produit] = { count: 0, surface: 0 };
+                        }
+                        produitUtilises[pr.produit].count++;
+                        if (p.surface) {
+                            produitUtilises[pr.produit].surface += parseFloat(p.surface) || 0;
+                        }
+                    }
+                });
+            });
+        });
+        
+        return { surfaceTotale, nbTraitements, iftTotal, produitUtilises };
+    };
+
+    const stats = calculerStatistiques();
+
+    // Export CSV
+    const exporterCSV = () => {
+        // Fonction helper pour échapper les valeurs CSV
+        const escapeCSV = (value) => {
+            if (value === null || value === undefined) return '';
+            const str = String(value);
+            if (str.includes(',') || str.includes('"') || str.includes('\n')) {
+                return `"${str.replace(/"/g, '""')}"`;
+            }
+            return str;
+        };
+        
+        let csv = '';
+        
+        // ========== FEUILLE 1: TRAITEMENTS DETAILLES ==========
+        csv += 'REGISTRE PHYTOSANITAIRE - ANNEE ' + annee + '\n';
+        csv += 'TRAITEMENTS DETAILLES PAR PARCELLE\n\n';
+        csv += 'Parcelle;Ilot;Surface (ha);N° Traitement;Date;Produit;N° Lot;Dose;Unite;IFT;Operateur;Machine;Debit;Vitesse\n';
+        
+        parcelles.forEach(p => {
+            if (p.traitements.length === 0) {
+                csv += escapeCSV(p.nom) + ';' + 
+                       escapeCSV(p.ilot) + ';' + 
+                       escapeCSV(p.surface || '') + ';;;;;;;;;;;;\n';
+            } else {
+                p.traitements.forEach((t, tIdx) => {
+                    t.produits.forEach((pr, pIdx) => {
+                        const produitInfo = produitsDisponibles.find(pd => pd.nom === pr.produit);
+                        const ift = calculerIFT(pr.produit, pr.doseHa);
+                        
+                        csv += escapeCSV(pIdx === 0 ? p.nom : '') + ';' +
+                               escapeCSV(pIdx === 0 ? p.ilot : '') + ';' +
+                               escapeCSV(pIdx === 0 ? (p.surface || '') : '') + ';' +
+                               escapeCSV(pIdx === 0 ? (tIdx + 1) : '') + ';' +
+                               escapeCSV(pIdx === 0 ? t.date : '') + ';' +
+                               escapeCSV(pr.produit) + ';' +
+                               escapeCSV(pr.numeroLot) + ';' +
+                               escapeCSV(pr.doseHa) + ';' +
+                               escapeCSV(produitInfo ? produitInfo.unite : '') + ';' +
+                               escapeCSV(ift > 0 ? ift.toFixed(3) : '') + ';' +
+                               escapeCSV(pIdx === 0 ? t.operateur1 : '') + ';' +
+                               escapeCSV(pIdx === 0 ? t.machine : '') + ';' +
+                               escapeCSV(pIdx === 0 ? t.debit : '') + ';' +
+                               escapeCSV(pIdx === 0 ? t.vitesse : '') + '\n';
+                    });
+                });
+            }
+        });
+        
+        csv += '\n\n';
+        
+        // ========== FEUILLE 2: RESUME PAR PARCELLE ==========
+        csv += 'RESUME PAR PARCELLE\n\n';
+        csv += 'Parcelle;Ilot;Surface (ha);Nb Traitements;IFT Total\n';
+        
+        parcelles.forEach(p => {
+            let iftParcelle = 0;
+            p.traitements.forEach(t => {
+                iftParcelle += calculerIFTTraitement(t.produits);
+            });
+            
+            csv += escapeCSV(p.nom) + ';' +
+                   escapeCSV(p.ilot) + ';' +
+                   escapeCSV(p.surface || '') + ';' +
+                   p.traitements.length + ';' +
+                   iftParcelle.toFixed(2) + '\n';
+        });
+        
+        csv += '\n\n';
+        
+        // ========== FEUILLE 3: STATISTIQUES GENERALES ==========
+        csv += 'STATISTIQUES GENERALES\n\n';
+        csv += 'Indicateur;Valeur\n';
+        csv += 'Surface totale traitee;' + stats.surfaceTotale.toFixed(2) + ' ha\n';
+        csv += 'Nombre de parcelles;' + parcelles.length + '\n';
+        csv += 'Nombre de traitements;' + stats.nbTraitements + '\n';
+        csv += 'IFT Total;' + stats.iftTotal.toFixed(2) + '\n';
+        csv += 'IFT Moyen par hectare;' + (stats.surfaceTotale > 0 ? (stats.iftTotal / stats.surfaceTotale).toFixed(2) : '0') + '\n';
+        
+        csv += '\n\n';
+        
+        // ========== FEUILLE 4: CONSOMMATION PRODUITS ==========
+        csv += 'CONSOMMATION PAR PRODUIT\n\n';
+        csv += 'Produit;Categorie;Nb Utilisations;Surface traitee (ha);Dose reference;Unite\n';
+        
+        Object.entries(stats.produitUtilises)
+            .sort((a, b) => b[1].count - a[1].count)
+            .forEach(([produit, data]) => {
+                const produitInfo = produitsDisponibles.find(p => p.nom === produit);
+                csv += escapeCSV(produit) + ';' +
+                       escapeCSV(produitInfo ? produitInfo.categorie : '') + ';' +
+                       data.count + ';' +
+                       data.surface.toFixed(2) + ';' +
+                       escapeCSV(produitInfo ? produitInfo.doseRef : '') + ';' +
+                       escapeCSV(produitInfo ? produitInfo.unite : '') + '\n';
+            });
+        
+        csv += '\n\n';
+        
+        // ========== FEUILLE 5: OPERATEURS ET MACHINES ==========
+        csv += 'OPERATEURS DECLARES\n\n';
+        csv += 'N°;Nom\n';
+        operateurs.forEach((op, i) => {
+            if (op && op.trim() !== '') {
+                csv += (i + 1) + ';' + escapeCSV(op) + '\n';
+            }
+        });
+        
+        csv += '\n\n';
+        csv += 'MACHINES UTILISEES\n\n';
+        csv += 'N°;Nom;Debit (L/min);Vitesse (km/h)\n';
+        machines.forEach((m, i) => {
+            if (m.nom && m.nom.trim() !== '') {
+                csv += (i + 1) + ';' +
+                       escapeCSV(m.nom) + ';' +
+                       escapeCSV(m.debit) + ';' +
+                       escapeCSV(m.vitesse) + '\n';
+            }
+        });
+        
+        // Télécharger le fichier
+        const blob = new Blob(['\ufeff' + csv], { type: 'text/csv;charset=utf-8;' });
+        const link = document.createElement('a');
+        const url = URL.createObjectURL(blob);
+        link.setAttribute('href', url);
+        link.setAttribute('download', `Registre_Phyto_${annee}.csv`);
+        link.style.visibility = 'hidden';
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        
+        showToast('Export CSV réussi !');
+    };
+
+    // Import CSV
+    const importerCSV = (event) => {
+        const file = event.target.files[0];
+        if (!file) return;
+        
+        const reader = new FileReader();
+        reader.onload = (e) => {
+            try {
+                const csv = e.target.result;
+                const lines = csv.split('\n');
+                
+                // Chercher la section des traitements détaillés
+                let startIndex = -1;
+                for (let i = 0; i < lines.length; i++) {
+                    if (lines[i].includes('TRAITEMENTS DETAILLES')) {
+                        startIndex = i + 2; // +2 pour sauter la ligne de titre
+                        break;
+                    }
+                }
+                
+                if (startIndex === -1) {
+                    showToast('Format CSV invalide', 'error');
+                    return;
+                }
+                
+                // Parser les lignes de traitement
+                const parseCSVLine = (line) => {
+                    const result = [];
+                    let current = '';
+                    let inQuotes = false;
+                    
+                    for (let i = 0; i < line.length; i++) {
+                        const char = line[i];
+                        
+                        if (char === '"') {
+                            if (inQuotes && line[i + 1] === '"') {
+                                current += '"';
+                                i++;
+                            } else {
+                                inQuotes = !inQuotes;
+                            }
+                        } else if (char === ',' && !inQuotes) {
+                            result.push(current);
+                            current = '';
+                        } else {
+                            current += char;
+                        }
+                    }
+                    result.push(current);
+                    return result;
+                };
+                
+                // Réinitialiser les parcelles
+                const newParcelles = initParcelles();
+                const traitementsByParcelle = {};
+                
+                // Parcourir les lignes
+                for (let i = startIndex; i < lines.length; i++) {
+                    const line = lines[i].trim();
+                    if (!line || line.startsWith('CONSOMMATION PRODUITS')) break;
+                    
+                    const cols = parseCSVLine(line);
+                    if (cols.length < 12) continue;
+                    
+                    const [parcelleName, ilot, surface, date, produit, numeroLot, doseHa, dar, operateur, machine, debit, vitesse] = cols;
+                    
+                    if (!produit) continue;
+                    
+                    // Trouver ou créer le traitement
+                    const key = `${parcelleName}-${date}`;
+                    
+                    if (!traitementsByParcelle[key]) {
+                        traitementsByParcelle[key] = {
+                            parcelleName,
+                            ilot,
+                            surface,
+                            date,
+                            operateur,
+                            machine,
+                            debit,
+                            vitesse,
+                            produits: []
+                        };
+                    }
+                    
+                    traitementsByParcelle[key].produits.push({
+                        produit,
+                        numeroLot,
+                        doseHa
+                    });
+                }
+                
+                // Appliquer les traitements aux parcelles
+                Object.values(traitementsByParcelle).forEach(t => {
+                    const parcelle = newParcelles.find(p => p.nom === t.parcelleName);
+                    if (parcelle) {
+                        parcelle.surface = t.surface;
+                        parcelle.traitements.push({
+                            id: Date.now() + Math.random(),
+                            date: t.date,
+                            produits: t.produits,
+                            operateur1: t.operateur,
+                            machine: t.machine,
+                            debit: t.debit,
+                            vitesse: t.vitesse
+                        });
+                    }
+                });
+                
+                setParcelles(newParcelles);
+                showToast('Import CSV réussi ! ' + Object.keys(traitementsByParcelle).length + ' traitement(s) importé(s)');
+                
+            } catch (error) {
+                console.error('Erreur import:', error);
+                showToast('Erreur lors de l\'import CSV', 'error');
+            }
+        };
+        
+        reader.readAsText(file, 'UTF-8');
+        event.target.value = ''; // Reset input
+    };
+
+    const toggleIlot = (ilotNom) => {
+        setIlotsOuverts(prev => 
+            prev.includes(ilotNom) 
+                ? prev.filter(i => i !== ilotNom)
+                : [...prev, ilotNom]
+        );
+    };
+
+    const ajouterTraitement = (parcelleId) => {
+        setParcelles(parcelles.map(p => {
+            if (p.id === parcelleId && p.traitements.length < 20) {
+                return {
+                    ...p,
+                    traitements: [...p.traitements, {
+                        id: Date.now(),
+                        date: '',
+                        produits: [{ produit: '', numeroLot: '', doseHa: '' }],
+                        operateur1: '',
+                        machine: '',
+                        debit: '',
+                        vitesse: ''
+                    }]
+                };
+            }
+            return p;
+        }));
+        showToast('Traitement ajouté');
+    };
+
+    const supprimerTraitement = (parcelleId, traitementId) => {
+        if (confirm('Supprimer ce traitement ?')) {
+            setParcelles(parcelles.map(p => {
+                if (p.id === parcelleId) {
+                    return {
+                        ...p,
+                        traitements: p.traitements.filter(t => t.id !== traitementId)
+                    };
+                }
+                return p;
+            }));
+            showToast('Traitement supprimé');
+        }
+    };
+
+    const modifierParcelle = (parcelleId, champ, valeur) => {
+        setParcelles(parcelles.map(p => 
+            p.id === parcelleId ? { ...p, [champ]: valeur } : p
+        ));
+    };
+
+    const modifierTraitement = (parcelleId, traitementId, champ, valeur) => {
+        setParcelles(parcelles.map(p => {
+            if (p.id === parcelleId) {
+                return {
+                    ...p,
+                    traitements: p.traitements.map(t =>
+                        t.id === traitementId ? { ...t, [champ]: valeur } : t
+                    )
+                };
+            }
+            return p;
+        }));
+    };
+
+    const ajouterProduit = (parcelleId, traitementId) => {
+        setParcelles(parcelles.map(p => {
+            if (p.id === parcelleId) {
+                return {
+                    ...p,
+                    traitements: p.traitements.map(t => {
+                        if (t.id === traitementId && t.produits.length < 5) {
+                            return {
+                                ...t,
+                                produits: [...t.produits, { produit: '', numeroLot: '', doseHa: '' }]
+                            };
+                        }
+                        return t;
+                    })
+                };
+            }
+            return p;
+        }));
+    };
+
+    const supprimerProduit = (parcelleId, traitementId, produitIdx) => {
+        setParcelles(parcelles.map(p => {
+            if (p.id === parcelleId) {
+                return {
+                    ...p,
+                    traitements: p.traitements.map(t => {
+                        if (t.id === traitementId) {
+                            return {
+                                ...t,
+                                produits: t.produits.filter((_, idx) => idx !== produitIdx)
+                            };
+                        }
+                        return t;
+                    })
+                };
+            }
+            return p;
+        }));
+    };
+
+    const modifierProduit = (parcelleId, traitementId, produitIdx, champ, valeur) => {
+        setParcelles(parcelles.map(p => {
+            if (p.id === parcelleId) {
+                return {
+                    ...p,
+                    traitements: p.traitements.map(t => {
+                        if (t.id === traitementId) {
+                            return {
+                                ...t,
+                                produits: t.produits.map((prod, idx) =>
+                                    idx === produitIdx ? { ...prod, [champ]: valeur } : prod
+                                )
+                            };
+                        }
+                        return t;
+                    })
+                };
+            }
+            return p;
+        }));
+    };
+
+    const ouvrirModaleCopie = (parcelleId, traitementId) => {
+        const parcelle = parcelles.find(p => p.id === parcelleId);
+        const traitement = parcelle.traitements.find(t => t.id === traitementId);
+        setTraitementACopier({ parcelleId, traitementId, traitement });
+        setShowCopyModal(true);
+        setParcellesSelectionnees([]);
+    };
+
+    const toggleParcelleSelection = (parcelleId) => {
+        setParcellesSelectionnees(prev =>
+            prev.includes(parcelleId)
+                ? prev.filter(id => id !== parcelleId)
+                : [...prev, parcelleId]
+        );
+    };
+
+    const selectionnerToutIlot = (ilotNom) => {
+        const parcellesIlot = parcelles
+            .filter(p => p.ilot === ilotNom && p.id !== traitementACopier?.parcelleId)
+            .map(p => p.id);
+        
+        const toutesSelectionnees = parcellesIlot.every(id => parcellesSelectionnees.includes(id));
+        
+        if (toutesSelectionnees) {
+            setParcellesSelectionnees(prev => prev.filter(id => !parcellesIlot.includes(id)));
+        } else {
+            setParcellesSelectionnees(prev => [...new Set([...prev, ...parcellesIlot])]);
+        }
+    };
+
+    const copierTraitement = () => {
+        if (!traitementACopier || parcellesSelectionnees.length === 0) return;
+
+        const nouveauTraitement = {
+            ...traitementACopier.traitement,
+            id: Date.now()
+        };
+
+        setParcelles(parcelles.map(p => {
+            if (parcellesSelectionnees.includes(p.id) && p.traitements.length < 20) {
+                return {
+                    ...p,
+                    traitements: [...p.traitements, {
+                        ...nouveauTraitement,
+                        id: Date.now() + Math.random()
+                    }]
+                };
+            }
+            return p;
+        }));
+
+        showToast(`Traitement copié vers ${parcellesSelectionnees.length} parcelle(s)`);
+        setShowCopyModal(false);
+        setTraitementACopier(null);
+        setParcellesSelectionnees([]);
+    };
+
+    // Filtrage des parcelles
+    const parcellesFiltrees = parcelles.filter(p => {
+        if (!searchTerm) return true;
+        const term = searchTerm.toLowerCase();
+        
+        // Recherche par nom de parcelle ou îlot
+        if (p.nom.toLowerCase().includes(term) || p.ilot.toLowerCase().includes(term)) {
+            return true;
+        }
+        
+        // Recherche par produit dans les traitements
+        return p.traitements.some(t => 
+            t.produits.some(pr => pr.produit.toLowerCase().includes(term))
+        );
+    });
+
+    return (
+        <div className="min-h-screen p-4 md:p-8">
+            {toast && (
+                <div className={`toast ${toast.type}`}>
+                    <div className="flex items-center gap-2">
+                        {toast.type === 'success' && <CheckCircle className="text-green-600" />}
+                        {toast.type === 'error' && <AlertTriangle className="text-red-600" />}
+                        <span className="font-medium">{toast.message}</span>
+                    </div>
+                </div>
+            )}
+            
+            <div className="max-w-7xl mx-auto">
+                {/* En-tête */}
+                <div className="card-glass rounded-2xl shadow-2xl p-6 md:p-8 mb-6">
+                    <h1 className="header-title text-4xl md:text-5xl font-bold mb-6 text-center">
+                        🍇 Registre Phytosanitaire
+                    </h1>
+                    
+                    {/* Statistiques */}
+                    <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
+                        <div className="stat-card">
+                            <div className="text-sm opacity-90 mb-1">Surface totale</div>
+                            <div className="text-3xl font-bold">{stats.surfaceTotale.toFixed(2)} ha</div>
+                        </div>
+                        <div className="stat-card">
+                            <div className="text-sm opacity-90 mb-1">Traitements</div>
+                            <div className="text-3xl font-bold">{stats.nbTraitements}</div>
+                        </div>
+                        <div className="stat-card">
+                            <div className="text-sm opacity-90 mb-1">IFT Total</div>
+                            <div className="text-3xl font-bold">{stats.iftTotal.toFixed(2)}</div>
+                        </div>
+                        <div className="stat-card">
+                            <div className="text-sm opacity-90 mb-1">Parcelles</div>
+                            <div className="text-3xl font-bold">{parcelles.length}</div>
+                        </div>
+                    </div>
+
+                    {/* Contrôles */}
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-6">
+                        <div>
+                            <label className="block text-sm font-semibold text-gray-700 mb-2">Année</label>
+                            <select
+                                value={annee}
+                                onChange={(e) => changerAnnee(parseInt(e.target.value))}
+                                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent">
+                                {[2023, 2024, 2025, 2026].map(y => (
+                                    <option key={y} value={y}>{y}</option>
+                                ))}
+                            </select>
+                        </div>
+                        <div>
+                            <label className="block text-sm font-semibold text-gray-700 mb-2">Opérateur 1</label>
+                            <input
+                                type="text"
+                                value={operateurs[0]}
+                                onChange={(e) => setOperateurs([e.target.value, operateurs[1]])}
+                                placeholder="Nom de l'opérateur"
+                                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"/>
+                        </div>
+                        <div>
+                            <label className="block text-sm font-semibold text-gray-700 mb-2">Opérateur 2</label>
+                            <input
+                                type="text"
+                                value={operateurs[1]}
+                                onChange={(e) => setOperateurs([operateurs[0], e.target.value])}
+                                placeholder="Nom de l'opérateur"
+                                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"/>
+                        </div>
+                    </div>
+                    
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+                        <div className="flex items-end gap-2">
+                            <button
+                                onClick={exporterCSV}
+                                className="btn-primary flex-1 text-white px-4 py-2 rounded-lg font-semibold flex items-center justify-center gap-2">
+                                <Download /> Export CSV
+                            </button>
+                            <label className="btn-primary flex-1 text-white px-4 py-2 rounded-lg font-semibold flex items-center justify-center gap-2 cursor-pointer">
+                                <Upload /> Import CSV
+                                <input
+                                    type="file"
+                                    accept=".csv"
+                                    onChange={importerCSV}
+                                    className="hidden"/>
+                            </label>
+                        </div>
+                        <div className="flex items-end">
+                            <button
+                                onClick={() => setShowGestionParcelles(true)}
+                                className="w-full bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg font-semibold flex items-center justify-center gap-2 transition-all hover:shadow-lg">
+                                <Settings /> Gérer les parcelles
+                            </button>
+                        </div>
+                        <div className="flex items-end">
+                            <button
+                                onClick={reinitialiserParcelles}
+                                className="w-full bg-orange-600 hover:bg-orange-700 text-white px-4 py-2 rounded-lg font-semibold flex items-center justify-center gap-2 transition-all hover:shadow-lg">
+                                <RefreshCw /> Réinitialiser
+                            </button>
+                        </div>
+                    </div>
+
+                    {/* Recherche */}
+                    <div className="relative">
+                        <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
+                        <input
+                            type="text"
+                            value={searchTerm}
+                            onChange={(e) => setSearchTerm(e.target.value)}
+                            placeholder="Rechercher une parcelle, un îlot ou un produit..."
+                            className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"/>
+                    </div>
+
+                    {/* Google Drive Sync */}
+                    <div className="bg-gradient-to-r from-blue-50 to-indigo-50 rounded-lg p-4 border border-blue-200">
+                        <div className="flex items-center justify-between mb-3">
+                            <div className="flex items-center gap-2">
+                                {googleDriveConnected ? <Cloud className="text-blue-600" /> : <CloudOff className="text-gray-400" />}
+                                <span className="font-semibold text-gray-700">
+                                    {googleDriveConnected ? '☁️ Connecté à Google Drive' : '☁️ Google Drive (non connecté)'}
+                                </span>
+                            </div>
+                            {googleDriveConnected && (
+                                <label className="flex items-center gap-2 cursor-pointer">
+                                    <input
+                                        type="checkbox"
+                                        checked={autoSyncEnabled}
+                                        onChange={(e) => setAutoSyncEnabled(e.target.checked)}
+                                        className="w-4 h-4"/>
+                                    <span className="text-sm text-gray-600">Sync auto</span>
+                                </label>
+                            )}
+                        </div>
+                        <div className="flex gap-2">
+                            {!googleDriveConnected ? (
+                                <button
+                                    onClick={connecterGoogleDrive}
+                                    className="flex-1 bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg font-semibold flex items-center justify-center gap-2">
+                                    <Cloud /> Se connecter
+                                </button>
+                            ) : (
+                                <>
+                                    <button
+                                        onClick={sauvegarderSurDrive}
+                                        className="flex-1 bg-blue-600 hover:bg-blue-700 text-white px-3 py-2 rounded-lg font-semibold text-sm flex items-center justify-center gap-2">
+                                        <Upload size={16} /> Sauvegarder
+                                    </button>
+                                    <button
+                                        onClick={rechargerDepuisDrive}
+                                        className="flex-1 bg-green-600 hover:bg-green-700 text-white px-3 py-2 rounded-lg font-semibold text-sm flex items-center justify-center gap-2">
+                                        <Download size={16} /> Recharger
+                                    </button>
+                                    <button
+                                        onClick={deconnecterGoogleDrive}
+                                        className="bg-gray-300 hover:bg-gray-400 text-gray-700 px-3 py-2 rounded-lg font-semibold text-sm">
+                                        Déconnecter
+                                    </button>
+                                </>
+                            )}
+                        </div>
+                        {autoSyncEnabled && (
+                            <p className="text-xs text-blue-600 mt-2 italic">
+                                ⚡ Synchronisation automatique activée
+                            </p>
+                        )}
+                        {googleDriveConnected && sharedFolderId && (
+                            <p className="text-xs text-green-600 mt-2">
+                                📁 Dossier partagé : {SHARED_FOLDER_NAME}
+                            </p>
+                        )}
+                    </div>
+                </div>
+
+                {/* Configuration des machines */}
+                <div className="card-glass rounded-2xl shadow-xl p-6 mb-6">
+                    <h2 className="text-2xl font-bold mb-4 text-gray-800">⚙️ Machines</h2>
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                        {machines.map((machine, idx) => (
+                            <div key={idx} className="bg-gray-50 p-4 rounded-lg border border-gray-200">
+                                <label className="block text-sm font-semibold text-gray-700 mb-2">Machine {idx + 1}</label>
+                                <input
+                                    type="text"
+                                    value={machine.nom}
+                                    onChange={(e) => {
+                                        const newMachines = [...machines];
+                                        newMachines[idx].nom = e.target.value;
+                                        setMachines(newMachines);
+                                    }}
+                                    placeholder="Nom"
+                                    className="w-full px-3 py-2 border border-gray-300 rounded mb-2"/>
+                                <div className="grid grid-cols-2 gap-2">
+                                    <input
+                                        type="text"
+                                        value={machine.debit}
+                                        onChange={(e) => {
+                                            const newMachines = [...machines];
+                                            newMachines[idx].debit = e.target.value;
+                                            setMachines(newMachines);
+                                        }}
+                                        placeholder="Débit (L/min)"
+                                        className="w-full px-3 py-2 border border-gray-300 rounded"/>
+                                    <input
+                                        type="text"
+                                        value={machine.vitesse}
+                                        onChange={(e) => {
+                                            const newMachines = [...machines];
+                                            newMachines[idx].vitesse = e.target.value;
+                                            setMachines(newMachines);
+                                        }}
+                                        placeholder="Vitesse (km/h)"
+                                        className="w-full px-3 py-2 border border-gray-300 rounded"/>
+                                </div>
+                            </div>
+                        ))}
+                    </div>
+                </div>
+
+                {/* Îlots et parcelles */}
+                <div className="space-y-4">
+                    {ilots.map(ilot => {
+                        const parcellesIlot = parcellesFiltrees.filter(p => p.ilot === ilot.nom);
+                        if (parcellesIlot.length === 0 && searchTerm) return null;
+                        
+                        const isOpen = ilotsOuverts.includes(ilot.nom);
+                        const nbTraitements = parcellesIlot.reduce((acc, p) => acc + p.traitements.length, 0);
+                        const surfaceIlot = parcellesIlot.reduce((acc, p) => acc + (parseFloat(p.surface) || 0), 0);
+                        
+                        return (
+                            <div key={ilot.nom} className="card-glass rounded-2xl shadow-xl overflow-hidden">
+                                <button
+                                    onClick={() => toggleIlot(ilot.nom)}
+                                    className="ilot-header w-full px-6 py-4 flex items-center justify-between">
+                                    <div className="flex items-center gap-4">
+                                        <span className="text-2xl font-bold">{ilot.nom}</span>
+                                        <span className="bg-white bg-opacity-20 px-3 py-1 rounded-full text-sm">
+                                            {parcellesIlot.length} parcelles
+                                        </span>
+                                        <span className="bg-white bg-opacity-20 px-3 py-1 rounded-full text-sm">
+                                            {surfaceIlot.toFixed(2)} ha
+                                        </span>
+                                        <span className="bg-white bg-opacity-20 px-3 py-1 rounded-full text-sm">
+                                            {nbTraitements} traitements
+                                        </span>
+                                    </div>
+                                    {isOpen ? <ChevronUp /> : <ChevronDown />}
+                                </button>
+
+                                {isOpen && (
+                                    <div className="p-6 space-y-4">
+                                        {parcellesIlot.map(parcelle => (
+                                            <div key={parcelle.id} className="bg-white rounded-xl p-4 border-2 border-gray-100">
+                                                {/* En-tête parcelle */}
+                                                <div className="flex flex-wrap items-center gap-4 mb-4 pb-4 border-b-2 border-gray-100">
+                                                    <div className="flex-1 min-w-[200px]">
+                                                        <label className="block text-sm font-semibold text-gray-700 mb-1">Parcelle</label>
+                                                        <input
+                                                            type="text"
+                                                            value={parcelle.nom}
+                                                            onChange={(e) => modifierParcelle(parcelle.id, 'nom', e.target.value)}
+                                                            className="w-full px-3 py-2 border border-gray-300 rounded-lg font-semibold"/>
+                                                    </div>
+                                                    <div className="w-32">
+                                                        <label className="block text-sm font-semibold text-gray-700 mb-1">Surface (ha)</label>
+                                                        <input
+                                                            type="number"
+                                                            step="0.01"
+                                                            value={parcelle.surface}
+                                                            onChange={(e) => modifierParcelle(parcelle.id, 'surface', e.target.value)}
+                                                            className="w-full px-3 py-2 border border-gray-300 rounded-lg"/>
+                                                    </div>
+                                                    <div className="flex-shrink-0">
+                                                        <label className="block text-sm font-semibold text-gray-700 mb-1">&nbsp;</label>
+                                                        <button
+                                                            onClick={() => ajouterTraitement(parcelle.id)}
+                                                            disabled={parcelle.traitements.length >= 20}
+                                                            className="btn-primary text-white px-4 py-2 rounded-lg font-semibold flex items-center gap-2 disabled:opacity-50">
+                                                            <Plus /> Ajouter traitement
+                                                        </button>
+                                                    </div>
+                                                </div>
+
+                                                {/* Liste des traitements */}
+                                                {parcelle.traitements.length > 0 ? (
+                                                    <div className="space-y-4">
+                                                        {parcelle.traitements.map((traitement, traitementIndex) => {
+                                                            const iftTotal = calculerIFTTraitement(traitement.produits);
+                                                            
+                                                            return (
+                                                                <div key={traitement.id} className="traitement-card bg-gray-50 rounded-lg p-4">
+                                                                    <div className="flex items-start justify-between mb-3">
+                                                                        <div className="flex items-center gap-3">
+                                                                            <div className="bg-green-600 text-white rounded-full w-8 h-8 flex items-center justify-center font-bold text-sm flex-shrink-0">
+                                                                                {traitementIndex + 1}
+                                                                            </div>
+                                                                            <Calendar className="text-gray-600" />
+                                                                            <input
+                                                                                type="date"
+                                                                                value={traitement.date}
+                                                                                onChange={(e) => modifierTraitement(parcelle.id, traitement.id, 'date', e.target.value)}
+                                                                                className="px-3 py-2 border border-gray-300 rounded-lg font-semibold"/>
+                                                                            
+                                                                            {iftTotal > 0 && (
+                                                                                <div className="ift-badge">
+                                                                                    IFT: {iftTotal.toFixed(2)}
+                                                                                </div>
+                                                                            )}
+                                                                        </div>
+                                                                        <div className="flex gap-2">
+                                                                            <button
+                                                                                onClick={() => ouvrirModaleCopie(parcelle.id, traitement.id)}
+                                                                                className="text-blue-600 hover:text-blue-800 p-2"
+                                                                                title="Copier vers d'autres parcelles">
+                                                                                <Copy />
+                                                                            </button>
+                                                                            <button
+                                                                                onClick={() => supprimerTraitement(parcelle.id, traitement.id)}
+                                                                                className="text-red-600 hover:text-red-800 p-2"
+                                                                                title="Supprimer">
+                                                                                <Trash2 />
+                                                                            </button>
+                                                                        </div>
+                                                                    </div>
+
+                                                                    {/* Opérateur et machine */}
+                                                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mb-3">
+                                                                        <div>
+                                                                            <label className="block text-xs font-semibold text-gray-700 mb-1">Opérateur</label>
+                                                                            <select
+                                                                                value={traitement.operateur1}
+                                                                                onChange={(e) => modifierTraitement(parcelle.id, traitement.id, 'operateur1', e.target.value)}
+                                                                                className="w-full px-2 py-1 border border-gray-300 rounded text-sm">
+                                                                                <option value="">Sélectionner</option>
+                                                                                {operateurs.filter(op => op.trim() !== '').map((op, idx) => (
+                                                                                    <option key={idx} value={op}>{op}</option>
+                                                                                ))}
+                                                                            </select>
+                                                                        </div>
+                                                                        <div>
+                                                                            <label className="block text-xs font-semibold text-gray-700 mb-1">Machine</label>
+                                                                            <select
+                                                                                value={traitement.machine}
+                                                                                onChange={(e) => {
+                                                                                    const nomMachine = e.target.value;
+                                                                                    const selectedMachine = machines.find(m => m.nom === nomMachine);
+                                                                                    
+                                                                                    setParcelles(parcelles.map(p => {
+                                                                                        if (p.id === parcelle.id) {
+                                                                                            return {
+                                                                                                ...p,
+                                                                                                traitements: p.traitements.map(t => {
+                                                                                                    if (t.id === traitement.id) {
+                                                                                                        return {
+                                                                                                            ...t,
+                                                                                                            machine: nomMachine,
+                                                                                                            debit: selectedMachine?.debit || t.debit,
+                                                                                                            vitesse: selectedMachine?.vitesse || t.vitesse
+                                                                                                        };
+                                                                                                    }
+                                                                                                    return t;
+                                                                                                })
+                                                                                            };
+                                                                                        }
+                                                                                        return p;
+                                                                                    }));
+                                                                                }}
+                                                                                className="w-full px-2 py-1 border border-gray-300 rounded text-sm">
+                                                                                <option value="">Sélectionner</option>
+                                                                                {machines.filter(m => m.nom && m.nom.trim() !== '').map((m, idx) => (
+                                                                                    <option key={idx} value={m.nom}>
+                                                                                        {m.nom} {m.debit && m.vitesse ? `(${m.debit}L/min, ${m.vitesse}km/h)` : ''}
+                                                                                    </option>
+                                                                                ))}
+                                                                            </select>
+                                                                        </div>
+                                                                    </div>
+
+                                                                    {/* Produits */}
+                                                                    <div className="bg-white p-3 rounded-lg border border-gray-200">
+                                                                        <div className="flex items-center justify-between mb-2">
+                                                                            <label className="text-sm font-semibold text-gray-700">
+                                                                                Produits ({traitement.produits.length}/5)
+                                                                            </label>
+                                                                            <button
+                                                                                onClick={() => ajouterProduit(parcelle.id, traitement.id)}
+                                                                                disabled={traitement.produits.length >= 5}
+                                                                                className="text-sm text-green-600 hover:text-green-800 disabled:text-gray-400 font-semibold">
+                                                                                + Ajouter produit
+                                                                            </button>
+                                                                        </div>
+                                                                        <div className="space-y-2">
+                                                                            {traitement.produits.map((produit, pIdx) => {
+                                                                                const produitInfo = produitsDisponibles.find(p => p.nom === produit.produit);
+                                                                                const ift = calculerIFT(produit.produit, produit.doseHa);
+                                                                                
+                                                                                return (
+                                                                                    <div key={pIdx} className="grid grid-cols-12 gap-2 items-center">
+                                                                                        <div className="col-span-4">
+                                                                                            <select
+                                                                                                value={produit.produit}
+                                                                                                onChange={(e) => modifierProduit(parcelle.id, traitement.id, pIdx, 'produit', e.target.value)}
+                                                                                                className="w-full px-2 py-1 border border-gray-300 rounded text-sm">
+                                                                                                <option value="">Sélectionner</option>
+                                                                                                {produitsDisponibles.map((p, idx) => (
+                                                                                                    <option key={idx} value={p.nom}>
+                                                                                                        {p.nom}
+                                                                                                    </option>
+                                                                                                ))}
+                                                                                            </select>
+                                                                                        </div>
+                                                                                        <div className="col-span-3">
+                                                                                            <input
+                                                                                                type="text"
+                                                                                                value={produit.numeroLot}
+                                                                                                onChange={(e) => modifierProduit(parcelle.id, traitement.id, pIdx, 'numeroLot', e.target.value)}
+                                                                                                placeholder="N° lot"
+                                                                                                maxLength="15"
+                                                                                                className="w-full px-2 py-1 border border-gray-300 rounded text-sm"/>
+                                                                                        </div>
+                                                                                        <div className="col-span-2">
+                                                                                            <input
+                                                                                                type="text"
+                                                                                                value={produit.doseHa}
+                                                                                                onChange={(e) => modifierProduit(parcelle.id, traitement.id, pIdx, 'doseHa', e.target.value)}
+                                                                                                placeholder={produitInfo ? produitInfo.unite : "Dose/ha"}
+                                                                                                className="w-full px-2 py-1 border border-gray-300 rounded text-sm"/>
+                                                                                        </div>
+                                                                                        <div className="col-span-2 text-center">
+                                                                                            {ift > 0 && (
+                                                                                                <span className="text-xs font-bold text-green-700 bg-green-50 px-2 py-1 rounded">
+                                                                                                    IFT: {ift.toFixed(2)}
+                                                                                                </span>
+                                                                                            )}
+                                                                                        </div>
+                                                                                        <div className="col-span-1 flex justify-center">
+                                                                                            {traitement.produits.length > 1 && (
+                                                                                                <button
+                                                                                                    onClick={() => supprimerProduit(parcelle.id, traitement.id, pIdx)}
+                                                                                                    className="text-red-600 hover:text-red-800">
+                                                                                                    <Trash2 size={16}/>
+                                                                                                </button>
+                                                                                            )}
+                                                                                        </div>
+                                                                                    </div>
+                                                                                );
+                                                                            })}
+                                                                        </div>
+                                                                    </div>
+                                                                </div>
+                                                            );
+                                                        })}
+                                                    </div>
+                                                ) : (
+                                                    <p className="text-gray-500 text-center py-8">Aucun traitement enregistré</p>
+                                                )}
+                                            </div>
+                                        ))}
+                                    </div>
+                                )}
+                            </div>
+                        );
+                    })}
+                </div>
+            </div>
+
+            {/* Modal de copie */}
+            {showCopyModal && (
+                <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+                    <div className="bg-white rounded-2xl p-6 max-w-2xl w-full max-h-[80vh] overflow-y-auto shadow-2xl">
+                        <h3 className="text-2xl font-bold mb-4 text-gray-800">Copier vers d'autres parcelles</h3>
+                        {ilots.map(ilot => {
+                            const parcellesIlot = parcelles.filter(p => p.ilot === ilot.nom && p.id !== traitementACopier?.parcelleId);
+                            const nbSel = parcellesIlot.filter(p => parcellesSelectionnees.includes(p.id)).length;
+                            
+                            return (
+                                <div key={ilot.nom} className="mb-4">
+                                    <div className="flex items-center gap-2 mb-2">
+                                        <input
+                                            type="checkbox"
+                                            checked={parcellesIlot.length > 0 && parcellesIlot.every(p => parcellesSelectionnees.includes(p.id))}
+                                            onChange={() => selectionnerToutIlot(ilot.nom)}
+                                            className="w-4 h-4"/>
+                                        <label className="font-semibold text-gray-700">
+                                            {ilot.nom} ({nbSel}/{parcellesIlot.length})
+                                        </label>
+                                    </div>
+                                    <div className="grid grid-cols-3 gap-2 ml-6">
+                                        {parcellesIlot.map(p => (
+                                            <label key={p.id} className="flex items-center gap-2 text-sm">
+                                                <input
+                                                    type="checkbox"
+                                                    checked={parcellesSelectionnees.includes(p.id)}
+                                                    onChange={() => toggleParcelleSelection(p.id)}
+                                                    className="w-4 h-4"/>
+                                                {p.nom}
+                                            </label>
+                                        ))}
+                                    </div>
+                                </div>
+                            );
+                        })}
+                        <div className="flex gap-3 mt-6">
+                            <button
+                                onClick={copierTraitement}
+                                disabled={parcellesSelectionnees.length === 0}
+                                className="flex-1 bg-gradient-to-r from-green-500 to-green-600 text-white px-4 py-3 rounded-lg font-semibold hover:from-green-600 hover:to-green-700 disabled:opacity-50 disabled:cursor-not-allowed">
+                                Copier vers {parcellesSelectionnees.length} parcelle(s)
+                            </button>
+                            <button
+                                onClick={() => { 
+                                    setShowCopyModal(false); 
+                                    setTraitementACopier(null); 
+                                    setParcellesSelectionnees([]); 
+                                }}
+                                className="flex-1 bg-gray-300 text-gray-700 px-4 py-3 rounded-lg font-semibold hover:bg-gray-400">
+                                Annuler
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            {/* Modal de gestion des parcelles */}
+            {showGestionParcelles && (
+                <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+                    <div className="bg-white rounded-2xl p-6 max-w-4xl w-full max-h-[80vh] overflow-y-auto shadow-2xl">
+                        <div className="flex items-center justify-between mb-6">
+                            <h3 className="text-2xl font-bold text-gray-800">Gestion des parcelles</h3>
+                            <button
+                                onClick={() => setShowGestionParcelles(false)}
+                                className="text-gray-500 hover:text-gray-700 text-2xl font-bold">
+                                ×
+                            </button>
+                        </div>
+                        
+                        <div className="space-y-6">
+                            {ilots.map(ilot => {
+                                const parcellesIlot = parcelles.filter(p => p.ilot === ilot.nom);
+                                
+                                return (
+                                    <div key={ilot.nom} className="border-2 border-gray-200 rounded-xl p-4">
+                                        <div className="flex items-center justify-between mb-4">
+                                            <h4 className="text-xl font-bold text-gray-800">{ilot.nom}</h4>
+                                            <button
+                                                onClick={() => ajouterParcelle(ilot.nom)}
+                                                className="bg-green-600 hover:bg-green-700 text-white px-3 py-1 rounded-lg text-sm font-semibold flex items-center gap-1">
+                                                <Plus size={16} /> Ajouter
+                                            </button>
+                                        </div>
+                                        
+                                        <div className="space-y-2">
+                                            {parcellesIlot.map(parcelle => (
+                                                <div key={parcelle.id} className="flex items-center justify-between bg-gray-50 p-3 rounded-lg">
+                                                    <div className="flex-1">
+                                                        <span className="font-semibold text-gray-700">{parcelle.nom}</span>
+                                                        {parcelle.surface && (
+                                                            <span className="ml-3 text-sm text-gray-500">({parcelle.surface} ha)</span>
+                                                        )}
+                                                        {parcelle.traitements.length > 0 && (
+                                                            <span className="ml-3 text-sm text-blue-600">
+                                                                {parcelle.traitements.length} traitement(s)
+                                                            </span>
+                                                        )}
+                                                    </div>
+                                                    <div className="flex gap-2">
+                                                        <button
+                                                            onClick={() => modifierNomParcelle(parcelle.id)}
+                                                            className="text-blue-600 hover:text-blue-800 p-2"
+                                                            title="Modifier le nom">
+                                                            <Edit size={18} />
+                                                        </button>
+                                                        <button
+                                                            onClick={() => supprimerParcelle(parcelle.id)}
+                                                            className="text-red-600 hover:text-red-800 p-2"
+                                                            title="Supprimer">
+                                                            <Trash2 size={18} />
+                                                        </button>
+                                                    </div>
+                                                </div>
+                                            ))}
+                                            
+                                            {parcellesIlot.length === 0 && (
+                                                <p className="text-gray-500 text-center py-4 italic">Aucune parcelle dans cet îlot</p>
+                                            )}
+                                        </div>
+                                    </div>
+                                );
+                            })}
+                        </div>
+                        
+                        <div className="mt-6 flex justify-end">
+                            <button
+                                onClick={() => setShowGestionParcelles(false)}
+                                className="bg-green-600 hover:bg-green-700 text-white px-6 py-2 rounded-lg font-semibold">
+                                Fermer
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
+        </div>
+    );
+};
+
+ReactDOM.render(<PhytoTracker/>, document.getElementById('root'));
+    </script>
+</body>
+</html>
