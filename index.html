@@ -203,13 +203,6 @@ const CheckCircle = ({ size = 16 }) => (
     </svg>
 );
 
-const RefreshCw = ({ size = 20 }) => (
-    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-        <polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/>
-        <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/>
-    </svg>
-);
-
 const Edit = ({ size = 20 }) => (
     <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
         <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
@@ -271,39 +264,27 @@ const PhytoTracker = () => {
         ]}
     ];
 
-    // Base de données des produits avec leurs doses de référence pour le calcul de l'IFT
-    const produitsDisponibles = [
-        { nom: 'Bouillie Bordelaise', doseRef: 2000, unite: 'g/ha', categorie: 'Fongicide' },
-        { nom: 'Cuivre', doseRef: 1500, unite: 'g/ha', categorie: 'Fongicide' },
-        { nom: 'Soufre', doseRef: 5000, unite: 'g/ha', categorie: 'Fongicide' },
-        { nom: 'Mancozèbe', doseRef: 1600, unite: 'g/ha', categorie: 'Fongicide' },
-        { nom: 'Folpel', doseRef: 1200, unite: 'g/ha', categorie: 'Fongicide' },
-        { nom: 'Cymoxanil', doseRef: 150, unite: 'g/ha', categorie: 'Fongicide' },
-        { nom: 'Fénhexamide', doseRef: 500, unite: 'g/ha', categorie: 'Fongicide' },
-        { nom: 'Pyrimethanil', doseRef: 600, unite: 'g/ha', categorie: 'Fongicide' },
-        { nom: 'Switch', doseRef: 1000, unite: 'g/ha', categorie: 'Fongicide' },
-        { nom: 'Luna Privilege', doseRef: 400, unite: 'g/ha', categorie: 'Fongicide' },
-        { nom: 'Talendo', doseRef: 200, unite: 'g/ha', categorie: 'Fongicide' },
-        { nom: 'Flint Max', doseRef: 375, unite: 'g/ha', categorie: 'Fongicide' },
-        { nom: 'Systhane', doseRef: 175, unite: 'ml/ha', categorie: 'Fongicide' },
-        { nom: 'Amistar', doseRef: 400, unite: 'ml/ha', categorie: 'Fongicide' },
-        { nom: 'Quadris', doseRef: 800, unite: 'ml/ha', categorie: 'Fongicide' },
-        { nom: 'Confidor', doseRef: 200, unite: 'ml/ha', categorie: 'Insecticide' },
-        { nom: 'Closer', doseRef: 240, unite: 'ml/ha', categorie: 'Insecticide' },
-        { nom: 'Success 4', doseRef: 600, unite: 'ml/ha', categorie: 'Insecticide' },
-        { nom: 'Belt', doseRef: 150, unite: 'ml/ha', categorie: 'Insecticide' },
-        { nom: 'Movento', doseRef: 750, unite: 'ml/ha', categorie: 'Insecticide' },
-        { nom: 'Karaté Xpress', doseRef: 400, unite: 'ml/ha', categorie: 'Insecticide' },
-        { nom: 'Decis Expert', doseRef: 625, unite: 'ml/ha', categorie: 'Insecticide' },
-        { nom: 'Callisto', doseRef: 300, unite: 'ml/ha', categorie: 'Herbicide' },
-        { nom: 'Prowl 400', doseRef: 3000, unite: 'ml/ha', categorie: 'Herbicide' },
-        { nom: 'Spotlight Plus', doseRef: 2000, unite: 'ml/ha', categorie: 'Herbicide' },
-        { nom: 'Kerb Flo', doseRef: 1500, unite: 'ml/ha', categorie: 'Herbicide' },
-        { nom: 'Glyphosate', doseRef: 3000, unite: 'ml/ha', categorie: 'Herbicide' },
-        { nom: 'Basta F1', doseRef: 3000, unite: 'ml/ha', categorie: 'Herbicide' },
-        { nom: 'Roundup', doseRef: 3000, unite: 'ml/ha', categorie: 'Herbicide' },
-        { nom: 'Challenge 600', doseRef: 300, unite: 'ml/ha', categorie: 'Herbicide' }
+    // Base de données des produits par défaut
+    const produitsParDefaut = [
+        { nom: 'Bouillie Bordelaise', doseRef: 2, unite: 'kg/ha', categorie: 'Fongicide' },
+        { nom: 'Cuivre', doseRef: 1.5, unite: 'kg/ha', categorie: 'Fongicide' },
+        { nom: 'Soufre', doseRef: 5, unite: 'kg/ha', categorie: 'Fongicide' },
+        { nom: 'Switch', doseRef: 1, unite: 'kg/ha', categorie: 'Fongicide' },
+        { nom: 'Flint Max', doseRef: 0.375, unite: 'kg/ha', categorie: 'Fongicide' },
+        { nom: 'Confidor', doseRef: 0.2, unite: 'L/ha', categorie: 'Insecticide' },
+        { nom: 'Closer', doseRef: 0.24, unite: 'L/ha', categorie: 'Insecticide' },
+        { nom: 'Success 4', doseRef: 0.6, unite: 'L/ha', categorie: 'Insecticide' },
+        { nom: 'Belt', doseRef: 0.15, unite: 'L/ha', categorie: 'Insecticide' },
+        { nom: 'Movento', doseRef: 0.75, unite: 'L/ha', categorie: 'Insecticide' },
+        { nom: 'Karaté Xpress', doseRef: 0.4, unite: 'L/ha', categorie: 'Insecticide' },
+        { nom: 'Decis Expert', doseRef: 0.625, unite: 'L/ha', categorie: 'Insecticide' },
+        { nom: 'Spotlight Plus', doseRef: 2, unite: 'L/ha', categorie: 'Herbicide' },
+        { nom: 'Kerb Flo', doseRef: 1.5, unite: 'L/ha', categorie: 'Herbicide' },
+        { nom: 'Glyphosate', doseRef: 3, unite: 'L/ha', categorie: 'Herbicide' },
+        { nom: 'Roundup', doseRef: 3, unite: 'L/ha', categorie: 'Herbicide' }
     ];
+    
+    const [produitsDisponibles, setProduitsDisponibles] = useState(produitsParDefaut);
 
     const initParcelles = () => {
         let parcelles = [];
@@ -336,55 +317,26 @@ const PhytoTracker = () => {
         return parcelles;
     };
 
-    // Chargement des données depuis localStorage
-    const loadData = () => {
-        try {
-            const saved = localStorage.getItem(`phyto_${annee}`);
-            if (saved) {
-                const data = JSON.parse(saved);
-                return {
-                    parcelles: data.parcelles || initParcelles(),
-                    operateurs: data.operateurs || ['', ''],
-                    machines: data.machines || [
-                        { nom: '', debit: '', vitesse: '' },
-                        { nom: '', debit: '', vitesse: '' },
-                        { nom: '', debit: '', vitesse: '' }
-                    ]
-                };
-            }
-        } catch (e) {
-            console.error('Erreur chargement:', e);
-        }
-        return {
-            parcelles: initParcelles(),
-            operateurs: ['', ''],
-            machines: [
-                { nom: '', debit: '', vitesse: '' },
-                { nom: '', debit: '', vitesse: '' },
-                { nom: '', debit: '', vitesse: '' }
-            ]
-        };
-    };
-
-    const [parcelles, setParcelles] = useState(loadData().parcelles);
-    const [operateurs, setOperateurs] = useState(loadData().operateurs);
-    const [machines, setMachines] = useState(loadData().machines);
+    const [parcelles, setParcelles] = useState(initParcelles());
+    const [operateurs, setOperateurs] = useState(['', '']);
+    const [machines, setMachines] = useState([
+        { nom: '', debit: '', vitesse: '' },
+        { nom: '', debit: '', vitesse: '' },
+        { nom: '', debit: '', vitesse: '' }
+    ]);
 
     const [showCopyModal, setShowCopyModal] = useState(false);
     const [traitementACopier, setTraitementACopier] = useState(null);
     const [parcellesSelectionnees, setParcellesSelectionnees] = useState([]);
     const [ilotsOuverts, setIlotsOuverts] = useState(ilots.map(i => i.nom));
     const [showGestionParcelles, setShowGestionParcelles] = useState(false);
+    const [showGestionProduits, setShowGestionProduits] = useState(false);
+    const [searchProduit, setSearchProduit] = useState({});
+    const [showSuggestions, setShowSuggestions] = useState({});
     const [googleDriveConnected, setGoogleDriveConnected] = useState(false);
     const [googleAccessToken, setGoogleAccessToken] = useState(null);
     const [autoSyncEnabled, setAutoSyncEnabled] = useState(false);
     const [sharedFolderId, setSharedFolderId] = useState(null);
-
-    // Sauvegarde automatique
-    useEffect(() => {
-        const data = { parcelles, operateurs, machines };
-        localStorage.setItem(`phyto_${annee}`, JSON.stringify(data));
-    }, [parcelles, operateurs, machines, annee]);
 
     // Toast notification
     const showToast = (message, type = 'success') => {
@@ -395,24 +347,16 @@ const PhytoTracker = () => {
     // Changement d'année
     const changerAnnee = (nouvelleAnnee) => {
         setAnnee(nouvelleAnnee);
-        const data = loadData();
-        setParcelles(data.parcelles);
-        setOperateurs(data.operateurs);
-        setMachines(data.machines);
-    };
-
-    // Réinitialiser les parcelles
-    const reinitialiserParcelles = () => {
-        if (confirm('⚠️ ATTENTION : Cette action va réinitialiser toutes les parcelles avec les nouveaux noms et SUPPRIMER tous les traitements enregistrés.\n\nFaites un export CSV avant si vous voulez conserver vos données.\n\nContinuer ?')) {
-            localStorage.removeItem(`phyto_${annee}`);
-            setParcelles(initParcelles());
-            setOperateurs(['', '']);
-            setMachines([
-                { nom: '', debit: '', vitesse: '' },
-                { nom: '', debit: '', vitesse: '' },
-                { nom: '', debit: '', vitesse: '' }
-            ]);
-            showToast('Parcelles réinitialisées avec les nouveaux noms !');
+        setParcelles(initParcelles());
+        setOperateurs(['', '']);
+        setMachines([
+            { nom: '', debit: '', vitesse: '' },
+            { nom: '', debit: '', vitesse: '' },
+            { nom: '', debit: '', vitesse: '' }
+        ]);
+        // Recharger depuis Drive si connecté
+        if (googleAccessToken) {
+            chargerDepuisDrive(googleAccessToken);
         }
     };
 
@@ -460,6 +404,73 @@ const PhytoTracker = () => {
         if (confirm(message)) {
             setParcelles(parcelles.filter(p => p.id !== parcelleId));
             showToast(`Parcelle "${parcelle.nom}" supprimée`);
+        }
+    };
+
+    // ========== GESTION DES PRODUITS ==========
+    const ajouterProduitListe = () => {
+        const nom = prompt('Nom du produit :');
+        if (!nom || !nom.trim()) return;
+        
+        const doseRef = prompt('Dose de référence :');
+        if (!doseRef) return;
+        
+        const unite = prompt('Unité (kg/ha ou L/ha) :', 'L/ha');
+        if (!unite) return;
+        
+        const categorie = prompt('Catégorie (Fongicide, Insecticide, Herbicide ou Autre) :', 'Fongicide');
+        if (!categorie) return;
+        
+        const nouveauProduit = {
+            nom: nom.trim(),
+            doseRef: parseFloat(doseRef),
+            unite: unite.trim(),
+            categorie: categorie.trim()
+        };
+        
+        setProduitsDisponibles([...produitsDisponibles, nouveauProduit]);
+        showToast(`Produit "${nom}" ajouté`);
+    };
+
+    const modifierProduitListe = (index) => {
+        const produit = produitsDisponibles[index];
+        
+        const nom = prompt('Nom du produit :', produit.nom);
+        if (nom === null) return;
+        
+        const doseRef = prompt('Dose de référence :', produit.doseRef);
+        if (doseRef === null) return;
+        
+        const unite = prompt('Unité :', produit.unite);
+        if (unite === null) return;
+        
+        const categorie = prompt('Catégorie :', produit.categorie);
+        if (categorie === null) return;
+        
+        const nouveauxProduits = [...produitsDisponibles];
+        nouveauxProduits[index] = {
+            nom: nom.trim(),
+            doseRef: parseFloat(doseRef),
+            unite: unite.trim(),
+            categorie: categorie.trim()
+        };
+        
+        setProduitsDisponibles(nouveauxProduits);
+        showToast('Produit modifié');
+    };
+
+    const supprimerProduitListe = (index) => {
+        const produit = produitsDisponibles[index];
+        if (confirm(`Supprimer le produit "${produit.nom}" ?`)) {
+            setProduitsDisponibles(produitsDisponibles.filter((_, i) => i !== index));
+            showToast(`Produit "${produit.nom}" supprimé`);
+        }
+    };
+    
+    const reinitialiserProduits = () => {
+        if (confirm('⚠️ Réinitialiser la liste des produits avec les valeurs par défaut ?')) {
+            setProduitsDisponibles(produitsParDefaut);
+            showToast('Liste des produits réinitialisée');
         }
     };
 
@@ -584,6 +595,7 @@ const PhytoTracker = () => {
                 if (data.parcelles) setParcelles(data.parcelles);
                 if (data.operateurs) setOperateurs(data.operateurs);
                 if (data.machines) setMachines(data.machines);
+                if (data.produits) setProduitsDisponibles(data.produits);
                 
                 showToast('📥 Données chargées depuis Google Drive');
             }
@@ -605,6 +617,7 @@ const PhytoTracker = () => {
                 parcelles, 
                 operateurs, 
                 machines,
+                produits: produitsDisponibles,
                 lastUpdate: new Date().toISOString(),
                 updatedBy: 'user' // Vous pouvez ajouter le nom de l'utilisateur ici
             };
@@ -699,7 +712,7 @@ const PhytoTracker = () => {
 
             return () => clearInterval(interval);
         }
-    }, [autoSyncEnabled, googleDriveConnected, sharedFolderId, parcelles, operateurs, machines]);
+    }, [autoSyncEnabled, googleDriveConnected, sharedFolderId, parcelles, operateurs, machines, produitsDisponibles]);
 
     // Sauvegarder automatiquement à chaque modification si auto-sync est activé
     useEffect(() => {
@@ -710,7 +723,7 @@ const PhytoTracker = () => {
 
             return () => clearTimeout(timeoutId);
         }
-    }, [parcelles, operateurs, machines]);
+    }, [parcelles, operateurs, machines, produitsDisponibles]);
 
     // Calcul de l'IFT pour un produit
     const calculerIFT = (produit, doseUtilisee) => {
@@ -1323,9 +1336,9 @@ const PhytoTracker = () => {
                         </div>
                         <div className="flex items-end">
                             <button
-                                onClick={reinitialiserParcelles}
-                                className="w-full bg-orange-600 hover:bg-orange-700 text-white px-4 py-2 rounded-lg font-semibold flex items-center justify-center gap-2 transition-all hover:shadow-lg">
-                                <RefreshCw /> Réinitialiser
+                                onClick={() => setShowGestionProduits(true)}
+                                className="w-full bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded-lg font-semibold flex items-center justify-center gap-2 transition-all hover:shadow-lg">
+                                <Settings /> Gérer les produits
                             </button>
                         </div>
                     </div>
@@ -1624,18 +1637,67 @@ const PhytoTracker = () => {
                                                                                 
                                                                                 return (
                                                                                     <div key={pIdx} className="grid grid-cols-12 gap-2 items-center">
-                                                                                        <div className="col-span-4">
-                                                                                            <select
-                                                                                                value={produit.produit}
-                                                                                                onChange={(e) => modifierProduit(parcelle.id, traitement.id, pIdx, 'produit', e.target.value)}
-                                                                                                className="w-full px-2 py-1 border border-gray-300 rounded text-sm">
-                                                                                                <option value="">Sélectionner</option>
-                                                                                                {produitsDisponibles.map((p, idx) => (
-                                                                                                    <option key={idx} value={p.nom}>
-                                                                                                        {p.nom}
-                                                                                                    </option>
-                                                                                                ))}
-                                                                                            </select>
+                                                                                        <div className="col-span-4 relative">
+                                                                                            <input
+                                                                                                type="text"
+                                                                                                value={searchProduit[`${parcelle.id}-${traitement.id}-${pIdx}`] !== undefined 
+                                                                                                    ? searchProduit[`${parcelle.id}-${traitement.id}-${pIdx}`] 
+                                                                                                    : produit.produit}
+                                                                                                onChange={(e) => {
+                                                                                                    const key = `${parcelle.id}-${traitement.id}-${pIdx}`;
+                                                                                                    setSearchProduit({...searchProduit, [key]: e.target.value});
+                                                                                                    setShowSuggestions({...showSuggestions, [key]: true});
+                                                                                                }}
+                                                                                                onFocus={(e) => {
+                                                                                                    const key = `${parcelle.id}-${traitement.id}-${pIdx}`;
+                                                                                                    setShowSuggestions({...showSuggestions, [key]: true});
+                                                                                                }}
+                                                                                                onBlur={() => {
+                                                                                                    setTimeout(() => {
+                                                                                                        const key = `${parcelle.id}-${traitement.id}-${pIdx}`;
+                                                                                                        setShowSuggestions({...showSuggestions, [key]: false});
+                                                                                                    }, 200);
+                                                                                                }}
+                                                                                                placeholder="Rechercher un produit..."
+                                                                                                className="w-full px-2 py-1 border border-gray-300 rounded text-sm"
+                                                                                            />
+                                                                                            {showSuggestions[`${parcelle.id}-${traitement.id}-${pIdx}`] && (
+                                                                                                <div className="absolute z-50 w-full mt-1 bg-white border border-gray-300 rounded-lg shadow-lg max-h-60 overflow-y-auto">
+                                                                                                    {produitsDisponibles
+                                                                                                        .filter(p => {
+                                                                                                            const searchTerm = (searchProduit[`${parcelle.id}-${traitement.id}-${pIdx}`] || '').toLowerCase();
+                                                                                                            return p.nom.toLowerCase().includes(searchTerm) || 
+                                                                                                                   p.categorie.toLowerCase().includes(searchTerm);
+                                                                                                        })
+                                                                                                        .slice(0, 10)
+                                                                                                        .map((p, idx) => (
+                                                                                                            <div
+                                                                                                                key={idx}
+                                                                                                                onClick={() => {
+                                                                                                                    modifierProduit(parcelle.id, traitement.id, pIdx, 'produit', p.nom);
+                                                                                                                    const key = `${parcelle.id}-${traitement.id}-${pIdx}`;
+                                                                                                                    setSearchProduit({...searchProduit, [key]: p.nom});
+                                                                                                                    setShowSuggestions({...showSuggestions, [key]: false});
+                                                                                                                }}
+                                                                                                                className="px-3 py-2 hover:bg-green-50 cursor-pointer border-b border-gray-100 last:border-b-0"
+                                                                                                            >
+                                                                                                                <div className="font-semibold text-sm">{p.nom}</div>
+                                                                                                                <div className="text-xs text-gray-500">
+                                                                                                                    {p.categorie} - Dose ref: {p.doseRef} {p.unite}
+                                                                                                                </div>
+                                                                                                            </div>
+                                                                                                        ))}
+                                                                                                    {produitsDisponibles.filter(p => {
+                                                                                                        const searchTerm = (searchProduit[`${parcelle.id}-${traitement.id}-${pIdx}`] || '').toLowerCase();
+                                                                                                        return p.nom.toLowerCase().includes(searchTerm) || 
+                                                                                                               p.categorie.toLowerCase().includes(searchTerm);
+                                                                                                    }).length === 0 && (
+                                                                                                        <div className="px-3 py-2 text-sm text-gray-500 italic">
+                                                                                                            Aucun produit trouvé
+                                                                                                        </div>
+                                                                                                    )}
+                                                                                                </div>
+                                                                                            )}
                                                                                         </div>
                                                                                         <div className="col-span-3">
                                                                                             <input
@@ -1821,6 +1883,102 @@ const PhytoTracker = () => {
                             <button
                                 onClick={() => setShowGestionParcelles(false)}
                                 className="bg-green-600 hover:bg-green-700 text-white px-6 py-2 rounded-lg font-semibold">
+                                Fermer
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            {/* Modal de gestion des produits */}
+            {showGestionProduits && (
+                <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+                    <div className="bg-white rounded-2xl p-6 max-w-5xl w-full max-h-[80vh] overflow-y-auto shadow-2xl">
+                        <div className="flex items-center justify-between mb-6">
+                            <h3 className="text-2xl font-bold text-gray-800">Gestion des produits phytosanitaires</h3>
+                            <button
+                                onClick={() => setShowGestionProduits(false)}
+                                className="text-gray-500 hover:text-gray-700 text-2xl font-bold">
+                                ×
+                            </button>
+                        </div>
+                        
+                        <div className="mb-6 flex gap-3">
+                            <button
+                                onClick={ajouterProduitListe}
+                                className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg font-semibold flex items-center gap-2">
+                                <Plus size={18} /> Ajouter un produit
+                            </button>
+                            <button
+                                onClick={reinitialiserProduits}
+                                className="bg-orange-600 hover:bg-orange-700 text-white px-4 py-2 rounded-lg font-semibold">
+                                Réinitialiser la liste
+                            </button>
+                        </div>
+                        
+                        <div className="mb-4 text-sm text-gray-600">
+                            Total : {produitsDisponibles.length} produit(s)
+                        </div>
+                        
+                        {/* Liste des produits par catégorie */}
+                        {['Fongicide', 'Insecticide', 'Herbicide', 'Autre'].map(categorie => {
+                            const produitsCategorie = produitsDisponibles.filter(p => p.categorie === categorie);
+                            if (produitsCategorie.length === 0) return null;
+                            
+                            return (
+                                <div key={categorie} className="mb-6">
+                                    <h4 className="text-lg font-bold text-gray-700 mb-3 pb-2 border-b-2 border-gray-200">
+                                        {categorie}s ({produitsCategorie.length})
+                                    </h4>
+                                    <div className="grid grid-cols-1 gap-2">
+                                        {produitsCategorie.map((produit, idx) => {
+                                            const globalIndex = produitsDisponibles.indexOf(produit);
+                                            return (
+                                                <div key={globalIndex} className="flex items-center justify-between bg-gray-50 p-3 rounded-lg hover:bg-gray-100 transition">
+                                                    <div className="flex-1 grid grid-cols-3 gap-4">
+                                                        <div>
+                                                            <span className="font-semibold text-gray-800">{produit.nom}</span>
+                                                        </div>
+                                                        <div className="text-sm text-gray-600">
+                                                            Dose ref: <span className="font-semibold">{produit.doseRef} {produit.unite}</span>
+                                                        </div>
+                                                        <div className="text-sm text-gray-600">
+                                                            <span className={`px-2 py-1 rounded ${
+                                                                categorie === 'Fongicide' ? 'bg-blue-100 text-blue-700' :
+                                                                categorie === 'Insecticide' ? 'bg-yellow-100 text-yellow-700' :
+                                                                categorie === 'Herbicide' ? 'bg-green-100 text-green-700' :
+                                                                'bg-gray-200 text-gray-700'
+                                                            }`}>
+                                                                {produit.categorie}
+                                                            </span>
+                                                        </div>
+                                                    </div>
+                                                    <div className="flex gap-2 ml-4">
+                                                        <button
+                                                            onClick={() => modifierProduitListe(globalIndex)}
+                                                            className="text-blue-600 hover:text-blue-800 p-2"
+                                                            title="Modifier">
+                                                            <Edit size={18} />
+                                                        </button>
+                                                        <button
+                                                            onClick={() => supprimerProduitListe(globalIndex)}
+                                                            className="text-red-600 hover:text-red-800 p-2"
+                                                            title="Supprimer">
+                                                            <Trash2 size={18} />
+                                                        </button>
+                                                    </div>
+                                                </div>
+                                            );
+                                        })}
+                                    </div>
+                                </div>
+                            );
+                        })}
+                        
+                        <div className="mt-6 flex justify-end">
+                            <button
+                                onClick={() => setShowGestionProduits(false)}
+                                className="bg-purple-600 hover:bg-purple-700 text-white px-6 py-2 rounded-lg font-semibold">
                                 Fermer
                             </button>
                         </div>
