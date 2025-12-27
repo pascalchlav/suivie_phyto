@@ -1283,6 +1283,65 @@ const PhytoTracker = () => {
                         🍇 Registre Phytosanitaire
                     </h1>
                     
+                    {/* Google Drive Sync - Entre titre et stats */}
+                    <div className="bg-gradient-to-r from-blue-50 to-indigo-50 rounded-lg p-4 border border-blue-200 mb-6">
+                        <div className="flex items-center justify-between mb-3">
+                            <div className="flex items-center gap-2">
+                                {googleDriveConnected ? <Cloud className="text-blue-600" /> : <CloudOff className="text-gray-400" />}
+                                <span className="font-semibold text-gray-700">
+                                    {googleDriveConnected ? '☁️ Connecté à Google Drive' : '☁️ Google Drive (non connecté)'}
+                                </span>
+                            </div>
+                            {googleDriveConnected && (
+                                <label className="flex items-center gap-2 cursor-pointer">
+                                    <input
+                                        type="checkbox"
+                                        checked={autoSyncEnabled}
+                                        onChange={(e) => setAutoSyncEnabled(e.target.checked)}
+                                        className="w-4 h-4"/>
+                                    <span className="text-sm text-gray-600">Sync auto</span>
+                                </label>
+                            )}
+                        </div>
+                        <div className="flex gap-2">
+                            {!googleDriveConnected ? (
+                                <button
+                                    onClick={connecterGoogleDrive}
+                                    className="flex-1 bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg font-semibold flex items-center justify-center gap-2">
+                                    <Cloud /> Se connecter
+                                </button>
+                            ) : (
+                                <>
+                                    <button
+                                        onClick={sauvegarderSurDrive}
+                                        className="flex-1 bg-blue-600 hover:bg-blue-700 text-white px-3 py-2 rounded-lg font-semibold text-sm flex items-center justify-center gap-2">
+                                        <Upload size={16} /> Sauvegarder
+                                    </button>
+                                    <button
+                                        onClick={rechargerDepuisDrive}
+                                        className="flex-1 bg-green-600 hover:bg-green-700 text-white px-3 py-2 rounded-lg font-semibold text-sm flex items-center justify-center gap-2">
+                                        <Download size={16} /> Recharger
+                                    </button>
+                                    <button
+                                        onClick={deconnecterGoogleDrive}
+                                        className="bg-gray-300 hover:bg-gray-400 text-gray-700 px-3 py-2 rounded-lg font-semibold text-sm">
+                                        Déconnecter
+                                    </button>
+                                </>
+                            )}
+                        </div>
+                        {autoSyncEnabled && (
+                            <p className="text-xs text-blue-600 mt-2 italic">
+                                ⚡ Synchronisation automatique activée
+                            </p>
+                        )}
+                        {googleDriveConnected && sharedFolderId && (
+                            <p className="text-xs text-green-600 mt-2">
+                                📁 Dossier partagé : {SHARED_FOLDER_NAME}
+                            </p>
+                        )}
+                    </div>
+                    
                     {/* Statistiques */}
                     <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
                         <div className="stat-card">
@@ -1412,65 +1471,6 @@ const PhytoTracker = () => {
                             onChange={(e) => setSearchTerm(e.target.value)}
                             placeholder="Rechercher une parcelle, un îlot ou un produit..."
                             className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"/>
-                    </div>
-
-                    {/* Google Drive Sync */}
-                    <div className="bg-gradient-to-r from-blue-50 to-indigo-50 rounded-lg p-4 border border-blue-200">
-                        <div className="flex items-center justify-between mb-3">
-                            <div className="flex items-center gap-2">
-                                {googleDriveConnected ? <Cloud className="text-blue-600" /> : <CloudOff className="text-gray-400" />}
-                                <span className="font-semibold text-gray-700">
-                                    {googleDriveConnected ? '☁️ Connecté à Google Drive' : '☁️ Google Drive (non connecté)'}
-                                </span>
-                            </div>
-                            {googleDriveConnected && (
-                                <label className="flex items-center gap-2 cursor-pointer">
-                                    <input
-                                        type="checkbox"
-                                        checked={autoSyncEnabled}
-                                        onChange={(e) => setAutoSyncEnabled(e.target.checked)}
-                                        className="w-4 h-4"/>
-                                    <span className="text-sm text-gray-600">Sync auto</span>
-                                </label>
-                            )}
-                        </div>
-                        <div className="flex gap-2">
-                            {!googleDriveConnected ? (
-                                <button
-                                    onClick={connecterGoogleDrive}
-                                    className="flex-1 bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg font-semibold flex items-center justify-center gap-2">
-                                    <Cloud /> Se connecter
-                                </button>
-                            ) : (
-                                <>
-                                    <button
-                                        onClick={sauvegarderSurDrive}
-                                        className="flex-1 bg-blue-600 hover:bg-blue-700 text-white px-3 py-2 rounded-lg font-semibold text-sm flex items-center justify-center gap-2">
-                                        <Upload size={16} /> Sauvegarder
-                                    </button>
-                                    <button
-                                        onClick={rechargerDepuisDrive}
-                                        className="flex-1 bg-green-600 hover:bg-green-700 text-white px-3 py-2 rounded-lg font-semibold text-sm flex items-center justify-center gap-2">
-                                        <Download size={16} /> Recharger
-                                    </button>
-                                    <button
-                                        onClick={deconnecterGoogleDrive}
-                                        className="bg-gray-300 hover:bg-gray-400 text-gray-700 px-3 py-2 rounded-lg font-semibold text-sm">
-                                        Déconnecter
-                                    </button>
-                                </>
-                            )}
-                        </div>
-                        {autoSyncEnabled && (
-                            <p className="text-xs text-blue-600 mt-2 italic">
-                                ⚡ Synchronisation automatique activée
-                            </p>
-                        )}
-                        {googleDriveConnected && sharedFolderId && (
-                            <p className="text-xs text-green-600 mt-2">
-                                📁 Dossier partagé : {SHARED_FOLDER_NAME}
-                            </p>
-                        )}
                     </div>
                 </div>
 
