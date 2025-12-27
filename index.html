@@ -236,7 +236,7 @@ const PhytoTracker = () => {
     
     const ilots = [
         { nom: 'Bommes', parcelles: [
-            'Droite', 'Gauche', 'Augey 1', 'Augey 2', '2x8', 'Sauvignon route', 
+            'Droite', 'Gauche', 'BARTHE (à coté gauche)', 'Augey (entre 2x8)', '2x8', 'Sauvignon route', 
             'Aromatique', 'Jardin', 'Pointe', 'Dumas grande', 'Plante 97', 'Pons',
             'Mahon', 'Goulard vieille', 'Goulard plante', 'Bosquet vieille', 
             'Bosquet plante', 'Trinquine route', 'Trinquine cerisier'
@@ -266,22 +266,38 @@ const PhytoTracker = () => {
 
     // Base de données des produits par défaut
     const produitsParDefaut = [
-        { nom: 'Bouillie Bordelaise', doseRef: 2, unite: 'kg/ha', categorie: 'Fongicide' },
-        { nom: 'Cuivre', doseRef: 1.5, unite: 'kg/ha', categorie: 'Fongicide' },
-        { nom: 'Soufre', doseRef: 5, unite: 'kg/ha', categorie: 'Fongicide' },
-        { nom: 'Switch', doseRef: 1, unite: 'kg/ha', categorie: 'Fongicide' },
-        { nom: 'Flint Max', doseRef: 0.375, unite: 'kg/ha', categorie: 'Fongicide' },
-        { nom: 'Confidor', doseRef: 0.2, unite: 'L/ha', categorie: 'Insecticide' },
-        { nom: 'Closer', doseRef: 0.24, unite: 'L/ha', categorie: 'Insecticide' },
-        { nom: 'Success 4', doseRef: 0.6, unite: 'L/ha', categorie: 'Insecticide' },
-        { nom: 'Belt', doseRef: 0.15, unite: 'L/ha', categorie: 'Insecticide' },
-        { nom: 'Movento', doseRef: 0.75, unite: 'L/ha', categorie: 'Insecticide' },
-        { nom: 'Karaté Xpress', doseRef: 0.4, unite: 'L/ha', categorie: 'Insecticide' },
-        { nom: 'Decis Expert', doseRef: 0.625, unite: 'L/ha', categorie: 'Insecticide' },
-        { nom: 'Spotlight Plus', doseRef: 2, unite: 'L/ha', categorie: 'Herbicide' },
-        { nom: 'Kerb Flo', doseRef: 1.5, unite: 'L/ha', categorie: 'Herbicide' },
-        { nom: 'Glyphosate', doseRef: 3, unite: 'L/ha', categorie: 'Herbicide' },
-        { nom: 'Roundup', doseRef: 3, unite: 'L/ha', categorie: 'Herbicide' }
+        { nom: 'Mikal', doseRef: 4, unite: 'kg/ha', categorie: 'Fongicide' },
+        { nom: 'Microthiol', doseRef: 12.5, unite: 'kg/ha', categorie: 'Fongicide' },
+        { nom: 'Kumulus', doseRef: 12.5, unite: 'kg/ha', categorie: 'Fongicide' },
+        { nom: 'Soufre', doseRef: 12.5, unite: 'kg/ha', categorie: 'Fongicide' },
+        { nom: 'Pandero gold', doseRef: 2, unite: 'kg/ha', categorie: 'Fongicide' },
+        { nom: 'Conydia', doseRef: 0.5, unite: 'L/ha', categorie: 'Fongicide' },
+        { nom: 'Mayandra black rot', doseRef: 0.4, unite: 'L/ha', categorie: 'Fongicide' },
+        { nom: 'Sufrea quick', doseRef: 12.5, unite: 'kg/ha', categorie: 'Fongicide' },
+        { nom: 'Disco', doseRef: 0.2, unite: 'L/ha', categorie: 'Fongicide' },
+        { nom: 'Natchez', doseRef: 0.125, unite: 'kg/ha', categorie: 'Fongicide' },
+        { nom: 'Ampexio', doseRef: 0.5, unite: 'L/ha', categorie: 'Fongicide' },
+        { nom: 'Dynali', doseRef: 0.5, unite: 'L/ha', categorie: 'Fongicide' },
+        { nom: 'Futura', doseRef: 4, unite: 'L/ha', categorie: 'Fongicide' },
+        { nom: 'Vivando', doseRef: 0.2, unite: 'L/ha', categorie: 'Fongicide' },
+        { nom: 'Majox', doseRef: 2, unite: 'kg/ha', categorie: 'Fongicide' },
+        { nom: 'Lbg', doseRef: 4, unite: 'L/ha', categorie: 'Fongicide' },
+        { nom: 'Électis bleu', doseRef: 2.8, unite: 'L/ha', categorie: 'Fongicide' },
+        { nom: 'Nordox', doseRef: 2, unite: 'kg/ha', categorie: 'Fongicide' },
+        { nom: 'Mayanda oidium', doseRef: 0.5, unite: 'L/ha', categorie: 'Fongicide' },
+        { nom: 'Kusti', doseRef: 0.2, unite: 'L/ha', categorie: 'Insecticide' },
+        { nom: 'Cythrine', doseRef: 0.3, unite: 'L/ha', categorie: 'Insecticide' },
+        { nom: 'Deltastar', doseRef: 0.5, unite: 'L/ha', categorie: 'Insecticide' },
+        { nom: 'Mavrik', doseRef: 0.3, unite: 'L/ha', categorie: 'Insecticide' },
+        { nom: 'Affirm', doseRef: 1.5, unite: 'kg/ha', categorie: 'Insecticide' },
+        { nom: 'Trebon citadelle', doseRef: 0.3, unite: 'L/ha', categorie: 'Insecticide' },
+        { nom: 'Trebon tordeuse', doseRef: 0.4, unite: 'L/ha', categorie: 'Insecticide' },
+        { nom: 'Kerb', doseRef: 1.875, unite: 'L/ha', categorie: 'Herbicide' },
+        { nom: 'Buggy', doseRef: 6, unite: 'L/ha', categorie: 'Herbicide' },
+        { nom: 'Pledge', doseRef: 1.2, unite: 'kg/ha', categorie: 'Herbicide' },
+        { nom: 'Katana', doseRef: 0.2, unite: 'L/ha', categorie: 'Herbicide' },
+        { nom: 'Foxy', doseRef: 1, unite: 'L/hl', categorie: 'Adjuvant' },
+        { nom: 'Djeen', doseRef: 0.15, unite: 'L/hl', categorie: 'Adjuvant' }
     ];
     
     const [produitsDisponibles, setProduitsDisponibles] = useState(produitsParDefaut);
@@ -337,6 +353,11 @@ const PhytoTracker = () => {
     const [googleAccessToken, setGoogleAccessToken] = useState(null);
     const [autoSyncEnabled, setAutoSyncEnabled] = useState(false);
     const [sharedFolderId, setSharedFolderId] = useState(null);
+    
+    // Compteurs manuels de traitements par îlot
+    const [compteursIlots, setCompteursIlots] = useState(
+        ilots.reduce((acc, ilot) => ({ ...acc, [ilot.nom]: 0 }), {})
+    );
 
     // Toast notification
     const showToast = (message, type = 'success') => {
@@ -354,6 +375,7 @@ const PhytoTracker = () => {
             { nom: '', debit: '', vitesse: '' },
             { nom: '', debit: '', vitesse: '' }
         ]);
+        setCompteursIlots(ilots.reduce((acc, ilot) => ({ ...acc, [ilot.nom]: 0 }), {}));
         // Recharger depuis Drive si connecté
         if (googleAccessToken) {
             chargerDepuisDrive(googleAccessToken);
@@ -596,6 +618,7 @@ const PhytoTracker = () => {
                 if (data.operateurs) setOperateurs(data.operateurs);
                 if (data.machines) setMachines(data.machines);
                 if (data.produits) setProduitsDisponibles(data.produits);
+                if (data.compteursIlots) setCompteursIlots(data.compteursIlots);
                 
                 showToast('📥 Données chargées depuis Google Drive');
             }
@@ -618,6 +641,7 @@ const PhytoTracker = () => {
                 operateurs, 
                 machines,
                 produits: produitsDisponibles,
+                compteursIlots,
                 lastUpdate: new Date().toISOString(),
                 updatedBy: 'user' // Vous pouvez ajouter le nom de l'utilisateur ici
             };
@@ -712,7 +736,7 @@ const PhytoTracker = () => {
 
             return () => clearInterval(interval);
         }
-    }, [autoSyncEnabled, googleDriveConnected, sharedFolderId, parcelles, operateurs, machines, produitsDisponibles]);
+    }, [autoSyncEnabled, googleDriveConnected, sharedFolderId, parcelles, operateurs, machines, produitsDisponibles, compteursIlots]);
 
     // Sauvegarder automatiquement à chaque modification si auto-sync est activé
     useEffect(() => {
@@ -723,7 +747,7 @@ const PhytoTracker = () => {
 
             return () => clearTimeout(timeoutId);
         }
-    }, [parcelles, operateurs, machines, produitsDisponibles]);
+    }, [parcelles, operateurs, machines, produitsDisponibles, compteursIlots]);
 
     // Calcul de l'IFT pour un produit
     const calculerIFT = (produit, doseUtilisee) => {
@@ -1060,7 +1084,8 @@ const PhytoTracker = () => {
                         operateur1: '',
                         machine: '',
                         debit: '',
-                        vitesse: ''
+                        vitesse: '',
+                        commentaire: ''
                     }]
                 };
             }
@@ -1265,8 +1290,43 @@ const PhytoTracker = () => {
                             <div className="text-3xl font-bold">{stats.surfaceTotale.toFixed(2)} ha</div>
                         </div>
                         <div className="stat-card">
-                            <div className="text-sm opacity-90 mb-1">Traitements</div>
-                            <div className="text-3xl font-bold">{stats.nbTraitements}</div>
+                            <div className="flex justify-between items-center mb-3">
+                                <div className="text-sm opacity-90">Traitements par îlot</div>
+                                <button
+                                    onClick={() => {
+                                        const nouveauxCompteurs = {...compteursIlots};
+                                        ilots.forEach(ilot => {
+                                            nouveauxCompteurs[ilot.nom] = (nouveauxCompteurs[ilot.nom] || 0) + 1;
+                                        });
+                                        setCompteursIlots(nouveauxCompteurs);
+                                    }}
+                                    className="bg-blue-500 hover:bg-blue-600 text-white px-3 py-1 rounded-lg font-semibold text-xs transition-colors flex items-center gap-1"
+                                    title="Ajouter 1 traitement à tous les îlots">
+                                    <Plus size={14} /> Tous +1
+                                </button>
+                            </div>
+                            <div className="text-sm space-y-2">
+                                {ilots.map(ilot => (
+                                    <div key={ilot.nom} className="flex justify-between items-center">
+                                        <span className="font-medium">{ilot.nom}:</span>
+                                        <div className="flex items-center gap-2">
+                                            <button
+                                                onClick={() => setCompteursIlots({...compteursIlots, [ilot.nom]: Math.max(0, (compteursIlots[ilot.nom] || 0) - 1)})}
+                                                className="bg-red-500 hover:bg-red-600 text-white rounded-full w-6 h-6 flex items-center justify-center font-bold text-xs transition-colors"
+                                                title="Décrémenter">
+                                                -
+                                            </button>
+                                            <span className="font-bold min-w-[30px] text-center">{compteursIlots[ilot.nom] || 0}</span>
+                                            <button
+                                                onClick={() => setCompteursIlots({...compteursIlots, [ilot.nom]: (compteursIlots[ilot.nom] || 0) + 1})}
+                                                className="bg-green-500 hover:bg-green-600 text-white rounded-full w-6 h-6 flex items-center justify-center font-bold text-xs transition-colors"
+                                                title="Incrémenter">
+                                                +
+                                            </button>
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>
                         </div>
                         <div className="stat-card">
                             <div className="text-sm opacity-90 mb-1">IFT Total</div>
@@ -1480,9 +1540,6 @@ const PhytoTracker = () => {
                                         </span>
                                         <span className="bg-white bg-opacity-20 px-3 py-1 rounded-full text-sm">
                                             {surfaceIlot.toFixed(2)} ha
-                                        </span>
-                                        <span className="bg-white bg-opacity-20 px-3 py-1 rounded-full text-sm">
-                                            {nbTraitements} traitements
                                         </span>
                                     </div>
                                     {isOpen ? <ChevronUp /> : <ChevronDown />}
@@ -1737,6 +1794,18 @@ const PhytoTracker = () => {
                                                                             })}
                                                                         </div>
                                                                     </div>
+                                                                    
+                                                                    {/* Commentaire */}
+                                                                    <div className="mt-3">
+                                                                        <label className="block text-xs font-semibold text-gray-700 mb-1">Commentaire / Notes</label>
+                                                                        <textarea
+                                                                            value={traitement.commentaire || ''}
+                                                                            onChange={(e) => modifierTraitement(parcelle.id, traitement.id, 'commentaire', e.target.value)}
+                                                                            placeholder="Conditions météo, observations, remarques..."
+                                                                            rows="2"
+                                                                            className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm resize-none"
+                                                                        />
+                                                                    </div>
                                                                 </div>
                                                             );
                                                         })}
@@ -1921,7 +1990,7 @@ const PhytoTracker = () => {
                         </div>
                         
                         {/* Liste des produits par catégorie */}
-                        {['Fongicide', 'Insecticide', 'Herbicide', 'Autre'].map(categorie => {
+                        {['Fongicide', 'Insecticide', 'Herbicide', 'Adjuvant', 'Autre'].map(categorie => {
                             const produitsCategorie = produitsDisponibles.filter(p => p.categorie === categorie);
                             if (produitsCategorie.length === 0) return null;
                             
@@ -1947,6 +2016,7 @@ const PhytoTracker = () => {
                                                                 categorie === 'Fongicide' ? 'bg-blue-100 text-blue-700' :
                                                                 categorie === 'Insecticide' ? 'bg-yellow-100 text-yellow-700' :
                                                                 categorie === 'Herbicide' ? 'bg-green-100 text-green-700' :
+                                                                categorie === 'Adjuvant' ? 'bg-purple-100 text-purple-700' :
                                                                 'bg-gray-200 text-gray-700'
                                                             }`}>
                                                                 {produit.categorie}
