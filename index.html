@@ -1678,12 +1678,11 @@ const PhytoTracker = () => {
                                                                     <div className="bg-white p-3 rounded-lg border border-gray-200">
                                                                         <div className="flex items-center justify-between mb-2">
                                                                             <label className="text-sm font-semibold text-gray-700">
-                                                                                Produits ({traitement.produits.length}/5)
+                                                                                Produits ({traitement.produits.length})
                                                                             </label>
                                                                             <button
                                                                                 onClick={() => ajouterProduit(parcelle.id, traitement.id)}
-                                                                                disabled={traitement.produits.length >= 5}
-                                                                                className="text-sm text-green-600 hover:text-green-800 disabled:text-gray-400 font-semibold">
+                                                                                className="text-sm text-green-600 hover:text-green-800 font-semibold">
                                                                                 + Ajouter produit
                                                                             </button>
                                                                         </div>
