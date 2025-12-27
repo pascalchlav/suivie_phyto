@@ -358,6 +358,14 @@ const PhytoTracker = () => {
     const [compteursIlots, setCompteursIlots] = useState(
         ilots.reduce((acc, ilot) => ({ ...acc, [ilot.nom]: 0 }), {})
     );
+    
+    // Compteurs manuels de désherbages par saison et par îlot
+    const [compteursDesherbage, setCompteursDesherbage] = useState(
+        ilots.reduce((acc, ilot) => ({ 
+            ...acc, 
+            [ilot.nom]: { hiver: 0, printemps: 0, ete: 0 } 
+        }), {})
+    );
 
     // Toast notification
     const showToast = (message, type = 'success') => {
@@ -376,6 +384,7 @@ const PhytoTracker = () => {
             { nom: '', debit: '', vitesse: '' }
         ]);
         setCompteursIlots(ilots.reduce((acc, ilot) => ({ ...acc, [ilot.nom]: 0 }), {}));
+        setCompteursDesherbage(ilots.reduce((acc, ilot) => ({ ...acc, [ilot.nom]: { hiver: 0, printemps: 0, ete: 0 } }), {}));
         // Recharger depuis Drive si connecté
         if (googleAccessToken) {
             chargerDepuisDrive(googleAccessToken);
@@ -619,6 +628,7 @@ const PhytoTracker = () => {
                 if (data.machines) setMachines(data.machines);
                 if (data.produits) setProduitsDisponibles(data.produits);
                 if (data.compteursIlots) setCompteursIlots(data.compteursIlots);
+                if (data.compteursDesherbage) setCompteursDesherbage(data.compteursDesherbage);
                 
                 showToast('📥 Données chargées depuis Google Drive');
             }
@@ -642,6 +652,7 @@ const PhytoTracker = () => {
                 machines,
                 produits: produitsDisponibles,
                 compteursIlots,
+                compteursDesherbage,
                 lastUpdate: new Date().toISOString(),
                 updatedBy: 'user' // Vous pouvez ajouter le nom de l'utilisateur ici
             };
@@ -736,7 +747,7 @@ const PhytoTracker = () => {
 
             return () => clearInterval(interval);
         }
-    }, [autoSyncEnabled, googleDriveConnected, sharedFolderId, parcelles, operateurs, machines, produitsDisponibles, compteursIlots]);
+    }, [autoSyncEnabled, googleDriveConnected, sharedFolderId, parcelles, operateurs, machines, produitsDisponibles, compteursIlots, compteursDesherbage]);
 
     // Sauvegarder automatiquement à chaque modification si auto-sync est activé
     useEffect(() => {
@@ -747,7 +758,7 @@ const PhytoTracker = () => {
 
             return () => clearTimeout(timeoutId);
         }
-    }, [parcelles, operateurs, machines, produitsDisponibles, compteursIlots]);
+    }, [parcelles, operateurs, machines, produitsDisponibles, compteursIlots, compteursDesherbage]);
 
     // Calcul de l'IFT pour un produit
     const calculerIFT = (produit, doseUtilisee) => {
@@ -1085,13 +1096,37 @@ const PhytoTracker = () => {
                         machine: '',
                         debit: '',
                         vitesse: '',
-                        commentaire: ''
+                        commentaire: '',
+                        type: 'traitement' // Type de traitement
                     }]
                 };
             }
             return p;
         }));
         showToast('Traitement ajouté');
+    };
+
+    const ajouterDesherbage = (parcelleId) => {
+        setParcelles(parcelles.map(p => {
+            if (p.id === parcelleId && p.traitements.length < 20) {
+                return {
+                    ...p,
+                    traitements: [...p.traitements, {
+                        id: Date.now(),
+                        date: '',
+                        produits: [{ produit: '', numeroLot: '', doseHa: '' }],
+                        operateur1: '',
+                        machine: '',
+                        debit: '',
+                        vitesse: '',
+                        commentaire: '',
+                        type: 'desherbage' // Type désherbage
+                    }]
+                };
+            }
+            return p;
+        }));
+        showToast('Désherbage ajouté');
     };
 
     const supprimerTraitement = (parcelleId, traitementId) => {
@@ -1343,7 +1378,7 @@ const PhytoTracker = () => {
                     </div>
                     
                     {/* Statistiques */}
-                    <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
                         <div className="stat-card">
                             <div className="text-sm opacity-90 mb-1">Surface totale</div>
                             <div className="text-3xl font-bold">{stats.surfaceTotale.toFixed(2)} ha</div>
@@ -1364,7 +1399,7 @@ const PhytoTracker = () => {
                                     <Plus size={14} /> Tous +1
                                 </button>
                             </div>
-                            <div className="text-sm space-y-2">
+                            <div className="text-sm space-y-2 max-h-64 overflow-y-auto">
                                 {ilots.map(ilot => (
                                     <div key={ilot.nom} className="flex justify-between items-center">
                                         <span className="font-medium">{ilot.nom}:</span>
@@ -1387,6 +1422,105 @@ const PhytoTracker = () => {
                                 ))}
                             </div>
                         </div>
+                        <div className="stat-card">
+                            <div className="text-sm opacity-90">Désherbages par îlot et saison</div>
+                            <div className="text-xs space-y-2 mt-3 max-h-64 overflow-y-auto">
+                                {ilots.map(ilot => (
+                                    <div key={ilot.nom} className="border-b border-gray-200 pb-2">
+                                        <div className="font-semibold text-gray-700 mb-1">{ilot.nom}</div>
+                                        <div className="grid grid-cols-3 gap-1 text-xs">
+                                            <div className="flex flex-col items-center bg-blue-50 rounded p-1">
+                                                <span className="text-blue-700 font-medium">Hiver</span>
+                                                <div className="flex items-center gap-1 mt-1">
+                                                    <button
+                                                        onClick={() => setCompteursDesherbage({
+                                                            ...compteursDesherbage, 
+                                                            [ilot.nom]: {
+                                                                ...(compteursDesherbage[ilot.nom] || {}),
+                                                                hiver: Math.max(0, (compteursDesherbage[ilot.nom]?.hiver || 0) - 1)
+                                                            }
+                                                        })}
+                                                        className="bg-red-400 hover:bg-red-500 text-white rounded w-5 h-5 flex items-center justify-center text-xs">
+                                                        -
+                                                    </button>
+                                                    <span className="font-bold min-w-[20px] text-center text-gray-800">{compteursDesherbage[ilot.nom]?.hiver || 0}</span>
+                                                    <button
+                                                        onClick={() => setCompteursDesherbage({
+                                                            ...compteursDesherbage, 
+                                                            [ilot.nom]: {
+                                                                ...(compteursDesherbage[ilot.nom] || {}),
+                                                                hiver: (compteursDesherbage[ilot.nom]?.hiver || 0) + 1
+                                                            }
+                                                        })}
+                                                        className="bg-blue-500 hover:bg-blue-600 text-white rounded w-5 h-5 flex items-center justify-center text-xs">
+                                                        +
+                                                    </button>
+                                                </div>
+                                            </div>
+                                            <div className="flex flex-col items-center bg-green-50 rounded p-1">
+                                                <span className="text-green-700 font-medium">Printemps</span>
+                                                <div className="flex items-center gap-1 mt-1">
+                                                    <button
+                                                        onClick={() => setCompteursDesherbage({
+                                                            ...compteursDesherbage, 
+                                                            [ilot.nom]: {
+                                                                ...(compteursDesherbage[ilot.nom] || {}),
+                                                                printemps: Math.max(0, (compteursDesherbage[ilot.nom]?.printemps || 0) - 1)
+                                                            }
+                                                        })}
+                                                        className="bg-red-400 hover:bg-red-500 text-white rounded w-5 h-5 flex items-center justify-center text-xs">
+                                                        -
+                                                    </button>
+                                                    <span className="font-bold min-w-[20px] text-center text-gray-800">{compteursDesherbage[ilot.nom]?.printemps || 0}</span>
+                                                    <button
+                                                        onClick={() => setCompteursDesherbage({
+                                                            ...compteursDesherbage, 
+                                                            [ilot.nom]: {
+                                                                ...(compteursDesherbage[ilot.nom] || {}),
+                                                                printemps: (compteursDesherbage[ilot.nom]?.printemps || 0) + 1
+                                                            }
+                                                        })}
+                                                        className="bg-green-500 hover:bg-green-600 text-white rounded w-5 h-5 flex items-center justify-center text-xs">
+                                                        +
+                                                    </button>
+                                                </div>
+                                            </div>
+                                            <div className="flex flex-col items-center bg-orange-50 rounded p-1">
+                                                <span className="text-orange-700 font-medium">Été</span>
+                                                <div className="flex items-center gap-1 mt-1">
+                                                    <button
+                                                        onClick={() => setCompteursDesherbage({
+                                                            ...compteursDesherbage, 
+                                                            [ilot.nom]: {
+                                                                ...(compteursDesherbage[ilot.nom] || {}),
+                                                                ete: Math.max(0, (compteursDesherbage[ilot.nom]?.ete || 0) - 1)
+                                                            }
+                                                        })}
+                                                        className="bg-red-400 hover:bg-red-500 text-white rounded w-5 h-5 flex items-center justify-center text-xs">
+                                                        -
+                                                    </button>
+                                                    <span className="font-bold min-w-[20px] text-center text-gray-800">{compteursDesherbage[ilot.nom]?.ete || 0}</span>
+                                                    <button
+                                                        onClick={() => setCompteursDesherbage({
+                                                            ...compteursDesherbage, 
+                                                            [ilot.nom]: {
+                                                                ...(compteursDesherbage[ilot.nom] || {}),
+                                                                ete: (compteursDesherbage[ilot.nom]?.ete || 0) + 1
+                                                            }
+                                                        })}
+                                                        className="bg-orange-500 hover:bg-orange-600 text-white rounded w-5 h-5 flex items-center justify-center text-xs">
+                                                        +
+                                                    </button>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
                         <div className="stat-card">
                             <div className="text-sm opacity-90 mb-1">IFT Total</div>
                             <div className="text-3xl font-bold">{stats.iftTotal.toFixed(2)}</div>
@@ -1568,14 +1702,22 @@ const PhytoTracker = () => {
                                                             onChange={(e) => modifierParcelle(parcelle.id, 'surface', e.target.value)}
                                                             className="w-full px-3 py-2 border border-gray-300 rounded-lg"/>
                                                     </div>
-                                                    <div className="flex-shrink-0">
+                                                    <div className="flex gap-2 flex-shrink-0">
                                                         <label className="block text-sm font-semibold text-gray-700 mb-1">&nbsp;</label>
-                                                        <button
-                                                            onClick={() => ajouterTraitement(parcelle.id)}
-                                                            disabled={parcelle.traitements.length >= 20}
-                                                            className="btn-primary text-white px-4 py-2 rounded-lg font-semibold flex items-center gap-2 disabled:opacity-50">
-                                                            <Plus /> Ajouter traitement
-                                                        </button>
+                                                        <div className="flex gap-2">
+                                                            <button
+                                                                onClick={() => ajouterTraitement(parcelle.id)}
+                                                                disabled={parcelle.traitements.length >= 20}
+                                                                className="btn-primary text-white px-4 py-2 rounded-lg font-semibold flex items-center gap-2 disabled:opacity-50">
+                                                                <Plus /> Ajouter traitement
+                                                            </button>
+                                                            <button
+                                                                onClick={() => ajouterDesherbage(parcelle.id)}
+                                                                disabled={parcelle.traitements.length >= 20}
+                                                                className="bg-amber-600 hover:bg-amber-700 text-white px-4 py-2 rounded-lg font-semibold flex items-center gap-2 disabled:opacity-50">
+                                                                <Plus /> Ajouter désherbage
+                                                            </button>
+                                                        </div>
                                                     </div>
                                                 </div>
 
@@ -1585,13 +1727,25 @@ const PhytoTracker = () => {
                                                         {parcelle.traitements.map((traitement, traitementIndex) => {
                                                             const iftTotal = calculerIFTTraitement(traitement.produits);
                                                             
+                                                            // Calculer les compteurs séparés
+                                                            const traitementsPrecedents = parcelle.traitements.slice(0, traitementIndex);
+                                                            const typeTraitement = traitement.type || 'traitement'; // Valeur par défaut
+                                                            const numTraitement = typeTraitement === 'desherbage' 
+                                                                ? traitementsPrecedents.filter(t => (t.type || 'traitement') === 'desherbage').length + 1
+                                                                : traitementsPrecedents.filter(t => (t.type || 'traitement') !== 'desherbage').length + 1;
+                                                            
                                                             return (
                                                                 <div key={traitement.id} className="traitement-card bg-gray-50 rounded-lg p-4">
                                                                     <div className="flex items-start justify-between mb-3">
                                                                         <div className="flex items-center gap-3">
-                                                                            <div className="bg-green-600 text-white rounded-full w-8 h-8 flex items-center justify-center font-bold text-sm flex-shrink-0">
-                                                                                {traitementIndex + 1}
+                                                                            <div className={`${typeTraitement === 'desherbage' ? 'bg-amber-600' : 'bg-green-600'} text-white rounded-full w-8 h-8 flex items-center justify-center font-bold text-sm flex-shrink-0`}>
+                                                                                {numTraitement}
                                                                             </div>
+                                                                            {typeTraitement === 'desherbage' && (
+                                                                                <div className="bg-amber-100 text-amber-800 px-2 py-1 rounded text-xs font-semibold">
+                                                                                    DÉSHERBAGE
+                                                                                </div>
+                                                                            )}
                                                                             <Calendar className="text-gray-600" />
                                                                             <input
                                                                                 type="date"
@@ -1721,6 +1875,15 @@ const PhytoTracker = () => {
                                                                                                 <div className="absolute z-50 w-full mt-1 bg-white border border-gray-300 rounded-lg shadow-lg max-h-60 overflow-y-auto">
                                                                                                     {produitsDisponibles
                                                                                                         .filter(p => {
+                                                                                                            // Filtrer par type de traitement
+                                                                                                            const typeTraitement = traitement.type || 'traitement';
+                                                                                                            if (typeTraitement === 'desherbage') {
+                                                                                                                // Désherbage : UNIQUEMENT herbicides
+                                                                                                                if (p.categorie !== 'Herbicide') return false;
+                                                                                                            } else {
+                                                                                                                // Traitement normal : EXCLURE herbicides
+                                                                                                                if (p.categorie === 'Herbicide') return false;
+                                                                                                            }
                                                                                                             const searchTerm = (searchProduit[`${parcelle.id}-${traitement.id}-${pIdx}`] || '').toLowerCase();
                                                                                                             return p.nom.toLowerCase().includes(searchTerm) || 
                                                                                                                    p.categorie.toLowerCase().includes(searchTerm);
