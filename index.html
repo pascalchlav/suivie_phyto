@@ -1379,8 +1379,21 @@ const PhytoTracker = () => {
                     {/* Statistiques */}
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
                         <div className="stat-card">
-                            <div className="text-sm opacity-90 mb-1">Surface totale</div>
-                            <div className="text-3xl font-bold">{stats.surfaceTotale.toFixed(2)} ha</div>
+                            <div className="text-sm opacity-90 mb-3">Statistiques générales</div>
+                            <div className="space-y-3">
+                                <div className="flex justify-between items-center">
+                                    <span className="text-sm text-gray-600">Surface totale:</span>
+                                    <span className="text-2xl font-bold text-gray-800">{stats.surfaceTotale.toFixed(2)} ha</span>
+                                </div>
+                                <div className="flex justify-between items-center">
+                                    <span className="text-sm text-gray-600">IFT Total:</span>
+                                    <span className="text-2xl font-bold text-gray-800">{stats.iftTotal.toFixed(2)}</span>
+                                </div>
+                                <div className="flex justify-between items-center">
+                                    <span className="text-sm text-gray-600">Parcelles:</span>
+                                    <span className="text-2xl font-bold text-gray-800">{parcelles.length}</span>
+                                </div>
+                            </div>
                         </div>
                         <div className="stat-card">
                             <div className="flex justify-between items-center mb-3">
@@ -1422,111 +1435,97 @@ const PhytoTracker = () => {
                             </div>
                         </div>
                         <div className="stat-card">
-                            <div className="text-sm opacity-90">Désherbages par îlot et saison</div>
-                            <div className="text-xs space-y-2 mt-3 max-h-64 overflow-y-auto">
+                            <div className="text-sm opacity-90 mb-3">Désherbages par îlot et saison</div>
+                            <div className="text-xs space-y-1.5 max-h-64 overflow-y-auto">
                                 {ilots.map(ilot => (
-                                    <div key={ilot.nom} className="border-b border-gray-200 pb-2">
-                                        <div className="font-semibold text-gray-700 mb-1">{ilot.nom}</div>
-                                        <div className="grid grid-cols-3 gap-1 text-xs">
-                                            <div className="flex flex-col items-center bg-blue-50 rounded p-1">
-                                                <span className="text-blue-700 font-medium">Hiver</span>
-                                                <div className="flex items-center gap-1 mt-1">
-                                                    <button
-                                                        onClick={() => setCompteursDesherbage({
-                                                            ...compteursDesherbage, 
-                                                            [ilot.nom]: {
-                                                                ...(compteursDesherbage[ilot.nom] || {}),
-                                                                hiver: Math.max(0, (compteursDesherbage[ilot.nom]?.hiver || 0) - 1)
-                                                            }
-                                                        })}
-                                                        className="bg-red-400 hover:bg-red-500 text-white rounded w-5 h-5 flex items-center justify-center text-xs">
-                                                        -
-                                                    </button>
-                                                    <span className="font-bold min-w-[20px] text-center text-gray-800">{compteursDesherbage[ilot.nom]?.hiver || 0}</span>
-                                                    <button
-                                                        onClick={() => setCompteursDesherbage({
-                                                            ...compteursDesherbage, 
-                                                            [ilot.nom]: {
-                                                                ...(compteursDesherbage[ilot.nom] || {}),
-                                                                hiver: (compteursDesherbage[ilot.nom]?.hiver || 0) + 1
-                                                            }
-                                                        })}
-                                                        className="bg-blue-500 hover:bg-blue-600 text-white rounded w-5 h-5 flex items-center justify-center text-xs">
-                                                        +
-                                                    </button>
-                                                </div>
+                                    <div key={ilot.nom} className="flex items-center justify-between gap-2 bg-gray-50 rounded px-2 py-1">
+                                        <span className="font-semibold text-gray-700 text-xs min-w-[60px]">{ilot.nom}</span>
+                                        <div className="flex items-center gap-1.5">
+                                            {/* Hiver */}
+                                            <div className="flex items-center gap-0.5 bg-blue-50 rounded px-1.5 py-0.5">
+                                                <span className="text-blue-700 font-medium text-[10px]">H</span>
+                                                <button
+                                                    onClick={() => setCompteursDesherbage({
+                                                        ...compteursDesherbage, 
+                                                        [ilot.nom]: {
+                                                            ...(compteursDesherbage[ilot.nom] || {}),
+                                                            hiver: Math.max(0, (compteursDesherbage[ilot.nom]?.hiver || 0) - 1)
+                                                        }
+                                                    })}
+                                                    className="bg-red-400 hover:bg-red-500 text-white rounded w-4 h-4 flex items-center justify-center text-[10px]">
+                                                    -
+                                                </button>
+                                                <span className="font-bold text-[11px] min-w-[16px] text-center text-gray-800">{compteursDesherbage[ilot.nom]?.hiver || 0}</span>
+                                                <button
+                                                    onClick={() => setCompteursDesherbage({
+                                                        ...compteursDesherbage, 
+                                                        [ilot.nom]: {
+                                                            ...(compteursDesherbage[ilot.nom] || {}),
+                                                            hiver: (compteursDesherbage[ilot.nom]?.hiver || 0) + 1
+                                                        }
+                                                    })}
+                                                    className="bg-blue-500 hover:bg-blue-600 text-white rounded w-4 h-4 flex items-center justify-center text-[10px]">
+                                                    +
+                                                </button>
                                             </div>
-                                            <div className="flex flex-col items-center bg-green-50 rounded p-1">
-                                                <span className="text-green-700 font-medium">Printemps</span>
-                                                <div className="flex items-center gap-1 mt-1">
-                                                    <button
-                                                        onClick={() => setCompteursDesherbage({
-                                                            ...compteursDesherbage, 
-                                                            [ilot.nom]: {
-                                                                ...(compteursDesherbage[ilot.nom] || {}),
-                                                                printemps: Math.max(0, (compteursDesherbage[ilot.nom]?.printemps || 0) - 1)
-                                                            }
-                                                        })}
-                                                        className="bg-red-400 hover:bg-red-500 text-white rounded w-5 h-5 flex items-center justify-center text-xs">
-                                                        -
-                                                    </button>
-                                                    <span className="font-bold min-w-[20px] text-center text-gray-800">{compteursDesherbage[ilot.nom]?.printemps || 0}</span>
-                                                    <button
-                                                        onClick={() => setCompteursDesherbage({
-                                                            ...compteursDesherbage, 
-                                                            [ilot.nom]: {
-                                                                ...(compteursDesherbage[ilot.nom] || {}),
-                                                                printemps: (compteursDesherbage[ilot.nom]?.printemps || 0) + 1
-                                                            }
-                                                        })}
-                                                        className="bg-green-500 hover:bg-green-600 text-white rounded w-5 h-5 flex items-center justify-center text-xs">
-                                                        +
-                                                    </button>
-                                                </div>
+                                            {/* Printemps */}
+                                            <div className="flex items-center gap-0.5 bg-green-50 rounded px-1.5 py-0.5">
+                                                <span className="text-green-700 font-medium text-[10px]">P</span>
+                                                <button
+                                                    onClick={() => setCompteursDesherbage({
+                                                        ...compteursDesherbage, 
+                                                        [ilot.nom]: {
+                                                            ...(compteursDesherbage[ilot.nom] || {}),
+                                                            printemps: Math.max(0, (compteursDesherbage[ilot.nom]?.printemps || 0) - 1)
+                                                        }
+                                                    })}
+                                                    className="bg-red-400 hover:bg-red-500 text-white rounded w-4 h-4 flex items-center justify-center text-[10px]">
+                                                    -
+                                                </button>
+                                                <span className="font-bold text-[11px] min-w-[16px] text-center text-gray-800">{compteursDesherbage[ilot.nom]?.printemps || 0}</span>
+                                                <button
+                                                    onClick={() => setCompteursDesherbage({
+                                                        ...compteursDesherbage, 
+                                                        [ilot.nom]: {
+                                                            ...(compteursDesherbage[ilot.nom] || {}),
+                                                            printemps: (compteursDesherbage[ilot.nom]?.printemps || 0) + 1
+                                                        }
+                                                    })}
+                                                    className="bg-green-500 hover:bg-green-600 text-white rounded w-4 h-4 flex items-center justify-center text-[10px]">
+                                                    +
+                                                </button>
                                             </div>
-                                            <div className="flex flex-col items-center bg-orange-50 rounded p-1">
-                                                <span className="text-orange-700 font-medium">Été</span>
-                                                <div className="flex items-center gap-1 mt-1">
-                                                    <button
-                                                        onClick={() => setCompteursDesherbage({
-                                                            ...compteursDesherbage, 
-                                                            [ilot.nom]: {
-                                                                ...(compteursDesherbage[ilot.nom] || {}),
-                                                                ete: Math.max(0, (compteursDesherbage[ilot.nom]?.ete || 0) - 1)
-                                                            }
-                                                        })}
-                                                        className="bg-red-400 hover:bg-red-500 text-white rounded w-5 h-5 flex items-center justify-center text-xs">
-                                                        -
-                                                    </button>
-                                                    <span className="font-bold min-w-[20px] text-center text-gray-800">{compteursDesherbage[ilot.nom]?.ete || 0}</span>
-                                                    <button
-                                                        onClick={() => setCompteursDesherbage({
-                                                            ...compteursDesherbage, 
-                                                            [ilot.nom]: {
-                                                                ...(compteursDesherbage[ilot.nom] || {}),
-                                                                ete: (compteursDesherbage[ilot.nom]?.ete || 0) + 1
-                                                            }
-                                                        })}
-                                                        className="bg-orange-500 hover:bg-orange-600 text-white rounded w-5 h-5 flex items-center justify-center text-xs">
-                                                        +
-                                                    </button>
-                                                </div>
+                                            {/* Été */}
+                                            <div className="flex items-center gap-0.5 bg-orange-50 rounded px-1.5 py-0.5">
+                                                <span className="text-orange-700 font-medium text-[10px]">E</span>
+                                                <button
+                                                    onClick={() => setCompteursDesherbage({
+                                                        ...compteursDesherbage, 
+                                                        [ilot.nom]: {
+                                                            ...(compteursDesherbage[ilot.nom] || {}),
+                                                            ete: Math.max(0, (compteursDesherbage[ilot.nom]?.ete || 0) - 1)
+                                                        }
+                                                    })}
+                                                    className="bg-red-400 hover:bg-red-500 text-white rounded w-4 h-4 flex items-center justify-center text-[10px]">
+                                                    -
+                                                </button>
+                                                <span className="font-bold text-[11px] min-w-[16px] text-center text-gray-800">{compteursDesherbage[ilot.nom]?.ete || 0}</span>
+                                                <button
+                                                    onClick={() => setCompteursDesherbage({
+                                                        ...compteursDesherbage, 
+                                                        [ilot.nom]: {
+                                                            ...(compteursDesherbage[ilot.nom] || {}),
+                                                            ete: (compteursDesherbage[ilot.nom]?.ete || 0) + 1
+                                                        }
+                                                    })}
+                                                    className="bg-orange-500 hover:bg-orange-600 text-white rounded w-4 h-4 flex items-center justify-center text-[10px]">
+                                                    +
+                                                </button>
                                             </div>
                                         </div>
                                     </div>
                                 ))}
                             </div>
-                        </div>
-                    </div>
-                    
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
-                        <div className="stat-card">
-                            <div className="text-sm opacity-90 mb-1">IFT Total</div>
-                            <div className="text-3xl font-bold">{stats.iftTotal.toFixed(2)}</div>
-                        </div>
-                        <div className="stat-card">
-                            <div className="text-sm opacity-90 mb-1">Parcelles</div>
-                            <div className="text-3xl font-bold">{parcelles.length}</div>
                         </div>
                     </div>
 
