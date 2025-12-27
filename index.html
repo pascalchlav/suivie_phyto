@@ -336,9 +336,9 @@ const PhytoTracker = () => {
     const [parcelles, setParcelles] = useState(initParcelles());
     const [operateurs, setOperateurs] = useState(['', '']);
     const [machines, setMachines] = useState([
-        { nom: '', debit: '', vitesse: '' },
-        { nom: '', debit: '', vitesse: '' },
-        { nom: '', debit: '', vitesse: '' }
+        { nom: '', vitesse: '' },
+        { nom: '', vitesse: '' },
+        { nom: '', vitesse: '' }
     ]);
 
     const [showCopyModal, setShowCopyModal] = useState(false);
@@ -379,9 +379,9 @@ const PhytoTracker = () => {
         setParcelles(initParcelles());
         setOperateurs(['', '']);
         setMachines([
-            { nom: '', debit: '', vitesse: '' },
-            { nom: '', debit: '', vitesse: '' },
-            { nom: '', debit: '', vitesse: '' }
+            { nom: '', vitesse: '' },
+            { nom: '', vitesse: '' },
+            { nom: '', vitesse: '' }
         ]);
         setCompteursIlots(ilots.reduce((acc, ilot) => ({ ...acc, [ilot.nom]: 0 }), {}));
         setCompteursDesherbage(ilots.reduce((acc, ilot) => ({ ...acc, [ilot.nom]: { hiver: 0, printemps: 0, ete: 0 } }), {}));
@@ -1259,10 +1259,9 @@ const PhytoTracker = () => {
     const copierTraitement = () => {
         if (!traitementACopier || parcellesSelectionnees.length === 0) return;
 
-        const nouveauTraitement = {
-            ...traitementACopier.traitement,
-            id: Date.now()
-        };
+        // Deep clone du traitement pour copier tous les tableaux imbriqués (produits, etc.)
+        const nouveauTraitement = JSON.parse(JSON.stringify(traitementACopier.traitement));
+        nouveauTraitement.id = Date.now();
 
         setParcelles(parcelles.map(p => {
             if (parcellesSelectionnees.includes(p.id) && p.traitements.length < 20) {
@@ -1625,28 +1624,16 @@ const PhytoTracker = () => {
                                     }}
                                     placeholder="Nom"
                                     className="w-full px-3 py-2 border border-gray-300 rounded mb-2"/>
-                                <div className="grid grid-cols-2 gap-2">
-                                    <input
-                                        type="text"
-                                        value={machine.debit}
-                                        onChange={(e) => {
-                                            const newMachines = [...machines];
-                                            newMachines[idx].debit = e.target.value;
-                                            setMachines(newMachines);
-                                        }}
-                                        placeholder="Débit (L/min)"
-                                        className="w-full px-3 py-2 border border-gray-300 rounded"/>
-                                    <input
-                                        type="text"
-                                        value={machine.vitesse}
-                                        onChange={(e) => {
-                                            const newMachines = [...machines];
-                                            newMachines[idx].vitesse = e.target.value;
-                                            setMachines(newMachines);
-                                        }}
-                                        placeholder="Vitesse (km/h)"
-                                        className="w-full px-3 py-2 border border-gray-300 rounded"/>
-                                </div>
+                                <input
+                                    type="text"
+                                    value={machine.vitesse}
+                                    onChange={(e) => {
+                                        const newMachines = [...machines];
+                                        newMachines[idx].vitesse = e.target.value;
+                                        setMachines(newMachines);
+                                    }}
+                                    placeholder="Vitesse (km/h)"
+                                    className="w-full px-3 py-2 border border-gray-300 rounded"/>
                             </div>
                         ))}
                     </div>
@@ -1806,7 +1793,6 @@ const PhytoTracker = () => {
                                                                                                         return {
                                                                                                             ...t,
                                                                                                             machine: nomMachine,
-                                                                                                            debit: selectedMachine?.debit || t.debit,
                                                                                                             vitesse: selectedMachine?.vitesse || t.vitesse
                                                                                                         };
                                                                                                     }
@@ -1821,10 +1807,20 @@ const PhytoTracker = () => {
                                                                                 <option value="">Sélectionner</option>
                                                                                 {machines.filter(m => m.nom && m.nom.trim() !== '').map((m, idx) => (
                                                                                     <option key={idx} value={m.nom}>
-                                                                                        {m.nom} {m.debit && m.vitesse ? `(${m.debit}L/min, ${m.vitesse}km/h)` : ''}
+                                                                                        {m.nom} {m.vitesse ? `(${m.vitesse}km/h)` : ''}
                                                                                     </option>
                                                                                 ))}
                                                                             </select>
+                                                                        </div>
+                                                                        <div>
+                                                                            <label className="block text-xs font-semibold text-gray-700 mb-1">Débit (L/ha)</label>
+                                                                            <input
+                                                                                type="number"
+                                                                                step="0.1"
+                                                                                value={traitement.debit}
+                                                                                onChange={(e) => modifierTraitement(parcelle.id, traitement.id, 'debit', e.target.value)}
+                                                                                placeholder="L/ha"
+                                                                                className="w-full px-2 py-1 border border-gray-300 rounded text-sm"/>
                                                                         </div>
                                                                     </div>
 
