@@ -764,16 +764,22 @@ const PhytoTracker = () => {
     const calculerStatistiques = () => {
         let surfaceTotale = 0;
         let nbTraitements = 0;
-        let iftTotal = 0;
+        let iftPondere = 0; // Somme des IFT pondérés par surface
         const produitUtilises = {};
         
         parcelles.forEach(p => {
-            if (p.surface) surfaceTotale += parseFloat(p.surface) || 0;
+            const surface = parseFloat(p.surface) || 0;
+            if (p.surface) surfaceTotale += surface;
             nbTraitements += p.traitements.length;
             
             p.traitements.forEach(t => {
                 // Calcul IFT du traitement
-                iftTotal += calculerIFTTraitement(t.produits);
+                const iftTraitement = calculerIFTTraitement(t.produits);
+                
+                // Pondérer l'IFT par la surface de la parcelle
+                if (surface > 0) {
+                    iftPondere += iftTraitement * surface;
+                }
                 
                 t.produits.forEach(pr => {
                     if (pr.produit) {
@@ -782,12 +788,15 @@ const PhytoTracker = () => {
                         }
                         produitUtilises[pr.produit].count++;
                         if (p.surface) {
-                            produitUtilises[pr.produit].surface += parseFloat(p.surface) || 0;
+                            produitUtilises[pr.produit].surface += surface;
                         }
                     }
                 });
             });
         });
+        
+        // IFT Total = moyenne pondérée par surface
+        const iftTotal = surfaceTotale > 0 ? iftPondere / surfaceTotale : 0;
         
         return { surfaceTotale, nbTraitements, iftTotal, produitUtilises };
     };
