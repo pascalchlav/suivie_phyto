@@ -203,6 +203,13 @@ const CheckCircle = ({ size = 16 }) => (
     </svg>
 );
 
+const RefreshCw = ({ size = 20 }) => (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+        <polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/>
+        <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/>
+    </svg>
+);
+
 const Edit = ({ size = 20 }) => (
     <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
         <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
@@ -236,7 +243,7 @@ const PhytoTracker = () => {
     
     const ilots = [
         { nom: 'Bommes', parcelles: [
-            'Droite', 'Gauche', 'BARTHE (à coté gauche)', 'Augey (entre 2x8)', '2x8', 'Sauvignon route', 
+            'Droite', 'Gauche', 'Augey 1', 'Augey 2', '2x8', 'Sauvignon route', 
             'Aromatique', 'Jardin', 'Pointe', 'Dumas grande', 'Plante 97', 'Pons',
             'Mahon', 'Goulard vieille', 'Goulard plante', 'Bosquet vieille', 
             'Bosquet plante', 'Trinquine route', 'Trinquine cerisier'
@@ -264,43 +271,39 @@ const PhytoTracker = () => {
         ]}
     ];
 
-    // Base de données des produits par défaut
-    const produitsParDefaut = [
-        { nom: 'Mikal', doseRef: 4, unite: 'kg/ha', categorie: 'Fongicide' },
-        { nom: 'Microthiol', doseRef: 12.5, unite: 'kg/ha', categorie: 'Fongicide' },
-        { nom: 'Kumulus', doseRef: 12.5, unite: 'kg/ha', categorie: 'Fongicide' },
-        { nom: 'Soufre', doseRef: 12.5, unite: 'kg/ha', categorie: 'Fongicide' },
-        { nom: 'Pandero gold', doseRef: 2, unite: 'kg/ha', categorie: 'Fongicide' },
-        { nom: 'Conydia', doseRef: 0.5, unite: 'L/ha', categorie: 'Fongicide' },
-        { nom: 'Mayandra black rot', doseRef: 0.4, unite: 'L/ha', categorie: 'Fongicide' },
-        { nom: 'Sufrea quick', doseRef: 12.5, unite: 'kg/ha', categorie: 'Fongicide' },
-        { nom: 'Disco', doseRef: 0.2, unite: 'L/ha', categorie: 'Fongicide' },
-        { nom: 'Natchez', doseRef: 0.125, unite: 'kg/ha', categorie: 'Fongicide' },
-        { nom: 'Ampexio', doseRef: 0.5, unite: 'L/ha', categorie: 'Fongicide' },
-        { nom: 'Dynali', doseRef: 0.5, unite: 'L/ha', categorie: 'Fongicide' },
-        { nom: 'Futura', doseRef: 4, unite: 'L/ha', categorie: 'Fongicide' },
-        { nom: 'Vivando', doseRef: 0.2, unite: 'L/ha', categorie: 'Fongicide' },
-        { nom: 'Majox', doseRef: 2, unite: 'kg/ha', categorie: 'Fongicide' },
-        { nom: 'Lbg', doseRef: 4, unite: 'L/ha', categorie: 'Fongicide' },
-        { nom: 'Électis bleu', doseRef: 2.8, unite: 'L/ha', categorie: 'Fongicide' },
-        { nom: 'Nordox', doseRef: 2, unite: 'kg/ha', categorie: 'Fongicide' },
-        { nom: 'Mayanda oidium', doseRef: 0.5, unite: 'L/ha', categorie: 'Fongicide' },
-        { nom: 'Kusti', doseRef: 0.2, unite: 'L/ha', categorie: 'Insecticide' },
-        { nom: 'Cythrine', doseRef: 0.3, unite: 'L/ha', categorie: 'Insecticide' },
-        { nom: 'Deltastar', doseRef: 0.5, unite: 'L/ha', categorie: 'Insecticide' },
-        { nom: 'Mavrik', doseRef: 0.3, unite: 'L/ha', categorie: 'Insecticide' },
-        { nom: 'Affirm', doseRef: 1.5, unite: 'kg/ha', categorie: 'Insecticide' },
-        { nom: 'Trebon citadelle', doseRef: 0.3, unite: 'L/ha', categorie: 'Insecticide' },
-        { nom: 'Trebon tordeuse', doseRef: 0.4, unite: 'L/ha', categorie: 'Insecticide' },
-        { nom: 'Kerb', doseRef: 1.875, unite: 'L/ha', categorie: 'Herbicide' },
-        { nom: 'Buggy', doseRef: 6, unite: 'L/ha', categorie: 'Herbicide' },
-        { nom: 'Pledge', doseRef: 1.2, unite: 'kg/ha', categorie: 'Herbicide' },
-        { nom: 'Katana', doseRef: 0.2, unite: 'L/ha', categorie: 'Herbicide' },
-        { nom: 'Foxy', doseRef: 1, unite: 'L/hl', categorie: 'Adjuvant' },
-        { nom: 'Djeen', doseRef: 0.15, unite: 'L/hl', categorie: 'Adjuvant' }
+    // Base de données des produits avec leurs doses de référence pour le calcul de l'IFT
+    const produitsDisponibles = [
+        { nom: 'Bouillie Bordelaise', doseRef: 2000, unite: 'g/ha', categorie: 'Fongicide' },
+        { nom: 'Cuivre', doseRef: 1500, unite: 'g/ha', categorie: 'Fongicide' },
+        { nom: 'Soufre', doseRef: 5000, unite: 'g/ha', categorie: 'Fongicide' },
+        { nom: 'Mancozèbe', doseRef: 1600, unite: 'g/ha', categorie: 'Fongicide' },
+        { nom: 'Folpel', doseRef: 1200, unite: 'g/ha', categorie: 'Fongicide' },
+        { nom: 'Cymoxanil', doseRef: 150, unite: 'g/ha', categorie: 'Fongicide' },
+        { nom: 'Fénhexamide', doseRef: 500, unite: 'g/ha', categorie: 'Fongicide' },
+        { nom: 'Pyrimethanil', doseRef: 600, unite: 'g/ha', categorie: 'Fongicide' },
+        { nom: 'Switch', doseRef: 1000, unite: 'g/ha', categorie: 'Fongicide' },
+        { nom: 'Luna Privilege', doseRef: 400, unite: 'g/ha', categorie: 'Fongicide' },
+        { nom: 'Talendo', doseRef: 200, unite: 'g/ha', categorie: 'Fongicide' },
+        { nom: 'Flint Max', doseRef: 375, unite: 'g/ha', categorie: 'Fongicide' },
+        { nom: 'Systhane', doseRef: 175, unite: 'ml/ha', categorie: 'Fongicide' },
+        { nom: 'Amistar', doseRef: 400, unite: 'ml/ha', categorie: 'Fongicide' },
+        { nom: 'Quadris', doseRef: 800, unite: 'ml/ha', categorie: 'Fongicide' },
+        { nom: 'Confidor', doseRef: 200, unite: 'ml/ha', categorie: 'Insecticide' },
+        { nom: 'Closer', doseRef: 240, unite: 'ml/ha', categorie: 'Insecticide' },
+        { nom: 'Success 4', doseRef: 600, unite: 'ml/ha', categorie: 'Insecticide' },
+        { nom: 'Belt', doseRef: 150, unite: 'ml/ha', categorie: 'Insecticide' },
+        { nom: 'Movento', doseRef: 750, unite: 'ml/ha', categorie: 'Insecticide' },
+        { nom: 'Karaté Xpress', doseRef: 400, unite: 'ml/ha', categorie: 'Insecticide' },
+        { nom: 'Decis Expert', doseRef: 625, unite: 'ml/ha', categorie: 'Insecticide' },
+        { nom: 'Callisto', doseRef: 300, unite: 'ml/ha', categorie: 'Herbicide' },
+        { nom: 'Prowl 400', doseRef: 3000, unite: 'ml/ha', categorie: 'Herbicide' },
+        { nom: 'Spotlight Plus', doseRef: 2000, unite: 'ml/ha', categorie: 'Herbicide' },
+        { nom: 'Kerb Flo', doseRef: 1500, unite: 'ml/ha', categorie: 'Herbicide' },
+        { nom: 'Glyphosate', doseRef: 3000, unite: 'ml/ha', categorie: 'Herbicide' },
+        { nom: 'Basta F1', doseRef: 3000, unite: 'ml/ha', categorie: 'Herbicide' },
+        { nom: 'Roundup', doseRef: 3000, unite: 'ml/ha', categorie: 'Herbicide' },
+        { nom: 'Challenge 600', doseRef: 300, unite: 'ml/ha', categorie: 'Herbicide' }
     ];
-    
-    const [produitsDisponibles, setProduitsDisponibles] = useState(produitsParDefaut);
 
     const initParcelles = () => {
         let parcelles = [];
@@ -333,39 +336,57 @@ const PhytoTracker = () => {
         return parcelles;
     };
 
-    const [parcelles, setParcelles] = useState(initParcelles());
-    const [operateurs, setOperateurs] = useState(['', '']);
-    const [machines, setMachines] = useState([
-        { nom: '', vitesse: '' },
-        { nom: '', vitesse: '' },
-        { nom: '', vitesse: '' }
-    ]);
+    // Chargement des données depuis localStorage
+    const loadData = () => {
+        try {
+            const saved = localStorage.getItem(`phyto_${annee}`);
+            if (saved) {
+                const data = JSON.parse(saved);
+                return {
+                    parcelles: data.parcelles || initParcelles(),
+                    operateurs: data.operateurs || ['', ''],
+                    machines: data.machines || [
+                        { nom: '', debit: '', vitesse: '' },
+                        { nom: '', debit: '', vitesse: '' },
+                        { nom: '', debit: '', vitesse: '' }
+                    ]
+                };
+            }
+        } catch (e) {
+            console.error('Erreur chargement:', e);
+        }
+        return {
+            parcelles: initParcelles(),
+            operateurs: ['', ''],
+            machines: [
+                { nom: '', debit: '', vitesse: '' },
+                { nom: '', debit: '', vitesse: '' },
+                { nom: '', debit: '', vitesse: '' }
+            ]
+        };
+    };
+
+    const [parcelles, setParcelles] = useState(loadData().parcelles);
+    const [operateurs, setOperateurs] = useState(loadData().operateurs);
+    const [machines, setMachines] = useState(loadData().machines);
 
     const [showCopyModal, setShowCopyModal] = useState(false);
     const [traitementACopier, setTraitementACopier] = useState(null);
     const [parcellesSelectionnees, setParcellesSelectionnees] = useState([]);
     const [ilotsOuverts, setIlotsOuverts] = useState(ilots.map(i => i.nom));
     const [showGestionParcelles, setShowGestionParcelles] = useState(false);
-    const [showGestionProduits, setShowGestionProduits] = useState(false);
-    const [searchProduit, setSearchProduit] = useState({});
-    const [showSuggestions, setShowSuggestions] = useState({});
     const [googleDriveConnected, setGoogleDriveConnected] = useState(false);
     const [googleAccessToken, setGoogleAccessToken] = useState(null);
     const [autoSyncEnabled, setAutoSyncEnabled] = useState(false);
     const [sharedFolderId, setSharedFolderId] = useState(null);
-    
-    // Compteurs manuels de traitements par îlot
-    const [compteursIlots, setCompteursIlots] = useState(
-        ilots.reduce((acc, ilot) => ({ ...acc, [ilot.nom]: 0 }), {})
-    );
-    
-    // Compteurs manuels de désherbages par saison et par îlot
-    const [compteursDesherbage, setCompteursDesherbage] = useState(
-        ilots.reduce((acc, ilot) => ({ 
-            ...acc, 
-            [ilot.nom]: { hiver: 0, printemps: 0, ete: 0 } 
-        }), {})
-    );
+    const [modeReadOnly, setModeReadOnly] = useState(false);
+    const [derniereCopie, setDerniereCopie] = useState(null);
+
+    // Sauvegarde automatique
+    useEffect(() => {
+        const data = { parcelles, operateurs, machines };
+        localStorage.setItem(`phyto_${annee}`, JSON.stringify(data));
+    }, [parcelles, operateurs, machines, annee]);
 
     // Toast notification
     const showToast = (message, type = 'success') => {
@@ -373,21 +394,38 @@ const PhytoTracker = () => {
         setTimeout(() => setToast(null), 3000);
     };
 
+    // Vérifier si modifications autorisées
+    const verifierModificationAutorisee = () => {
+        if (modeReadOnly) {
+            showToast('Modifications bloquées - Reconnectez-vous à Google Drive', 'error');
+            return false;
+        }
+        return true;
+    };
+
     // Changement d'année
     const changerAnnee = (nouvelleAnnee) => {
+        if (!verifierModificationAutorisee()) return;
         setAnnee(nouvelleAnnee);
-        setParcelles(initParcelles());
-        setOperateurs(['', '']);
-        setMachines([
-            { nom: '', vitesse: '' },
-            { nom: '', vitesse: '' },
-            { nom: '', vitesse: '' }
-        ]);
-        setCompteursIlots(ilots.reduce((acc, ilot) => ({ ...acc, [ilot.nom]: 0 }), {}));
-        setCompteursDesherbage(ilots.reduce((acc, ilot) => ({ ...acc, [ilot.nom]: { hiver: 0, printemps: 0, ete: 0 } }), {}));
-        // Recharger depuis Drive si connecté
-        if (googleAccessToken) {
-            chargerDepuisDrive(googleAccessToken);
+        const data = loadData();
+        setParcelles(data.parcelles);
+        setOperateurs(data.operateurs);
+        setMachines(data.machines);
+        setDerniereCopie(null);
+    };
+
+    // Réinitialiser les parcelles
+    const reinitialiserParcelles = () => {
+        if (confirm('⚠️ ATTENTION : Cette action va réinitialiser toutes les parcelles avec les nouveaux noms et SUPPRIMER tous les traitements enregistrés.\n\nFaites un export CSV avant si vous voulez conserver vos données.\n\nContinuer ?')) {
+            localStorage.removeItem(`phyto_${annee}`);
+            setParcelles(initParcelles());
+            setOperateurs(['', '']);
+            setMachines([
+                { nom: '', debit: '', vitesse: '' },
+                { nom: '', debit: '', vitesse: '' },
+                { nom: '', debit: '', vitesse: '' }
+            ]);
+            showToast('Parcelles réinitialisées avec les nouveaux noms !');
         }
     };
 
@@ -438,73 +476,6 @@ const PhytoTracker = () => {
         }
     };
 
-    // ========== GESTION DES PRODUITS ==========
-    const ajouterProduitListe = () => {
-        const nom = prompt('Nom du produit :');
-        if (!nom || !nom.trim()) return;
-        
-        const doseRef = prompt('Dose de référence :');
-        if (!doseRef) return;
-        
-        const unite = prompt('Unité (kg/ha ou L/ha) :', 'L/ha');
-        if (!unite) return;
-        
-        const categorie = prompt('Catégorie (Fongicide, Insecticide, Herbicide ou Autre) :', 'Fongicide');
-        if (!categorie) return;
-        
-        const nouveauProduit = {
-            nom: nom.trim(),
-            doseRef: parseFloat(doseRef),
-            unite: unite.trim(),
-            categorie: categorie.trim()
-        };
-        
-        setProduitsDisponibles([...produitsDisponibles, nouveauProduit]);
-        showToast(`Produit "${nom}" ajouté`);
-    };
-
-    const modifierProduitListe = (index) => {
-        const produit = produitsDisponibles[index];
-        
-        const nom = prompt('Nom du produit :', produit.nom);
-        if (nom === null) return;
-        
-        const doseRef = prompt('Dose de référence :', produit.doseRef);
-        if (doseRef === null) return;
-        
-        const unite = prompt('Unité :', produit.unite);
-        if (unite === null) return;
-        
-        const categorie = prompt('Catégorie :', produit.categorie);
-        if (categorie === null) return;
-        
-        const nouveauxProduits = [...produitsDisponibles];
-        nouveauxProduits[index] = {
-            nom: nom.trim(),
-            doseRef: parseFloat(doseRef),
-            unite: unite.trim(),
-            categorie: categorie.trim()
-        };
-        
-        setProduitsDisponibles(nouveauxProduits);
-        showToast('Produit modifié');
-    };
-
-    const supprimerProduitListe = (index) => {
-        const produit = produitsDisponibles[index];
-        if (confirm(`Supprimer le produit "${produit.nom}" ?`)) {
-            setProduitsDisponibles(produitsDisponibles.filter((_, i) => i !== index));
-            showToast(`Produit "${produit.nom}" supprimé`);
-        }
-    };
-    
-    const reinitialiserProduits = () => {
-        if (confirm('⚠️ Réinitialiser la liste des produits avec les valeurs par défaut ?')) {
-            setProduitsDisponibles(produitsParDefaut);
-            showToast('Liste des produits réinitialisée');
-        }
-    };
-
     // ========== GOOGLE DRIVE SYNC ==========
     const CLIENT_ID = '447944911998-ranpvgutp8qvtr7m6mkrlr0t28a8f81e.apps.googleusercontent.com';
     const DISCOVERY_DOC = 'https://www.googleapis.com/discovery/v1/apis/drive/v3/rest';
@@ -521,6 +492,7 @@ const PhytoTracker = () => {
                     if (response.access_token) {
                         setGoogleAccessToken(response.access_token);
                         setGoogleDriveConnected(true);
+                        setModeReadOnly(false);
                         showToast('✅ Connecté à Google Drive !');
                         
                         // Initialiser le dossier de manière asynchrone après la connexion
@@ -626,9 +598,6 @@ const PhytoTracker = () => {
                 if (data.parcelles) setParcelles(data.parcelles);
                 if (data.operateurs) setOperateurs(data.operateurs);
                 if (data.machines) setMachines(data.machines);
-                if (data.produits) setProduitsDisponibles(data.produits);
-                if (data.compteursIlots) setCompteursIlots(data.compteursIlots);
-                if (data.compteursDesherbage) setCompteursDesherbage(data.compteursDesherbage);
                 
                 showToast('📥 Données chargées depuis Google Drive');
             }
@@ -650,9 +619,6 @@ const PhytoTracker = () => {
                 parcelles, 
                 operateurs, 
                 machines,
-                produits: produitsDisponibles,
-                compteursIlots,
-                compteursDesherbage,
                 lastUpdate: new Date().toISOString(),
                 updatedBy: 'user' // Vous pouvez ajouter le nom de l'utilisateur ici
             };
@@ -724,7 +690,16 @@ const PhytoTracker = () => {
             }
         } catch (error) {
             console.error('Erreur Google Drive:', error);
-            showToast('❌ Erreur lors de la sauvegarde', 'error');
+            
+            // Détecter expiration token
+            const errorMessage = error.message || '';
+            if (errorMessage.includes('401') || errorMessage.includes('Invalid')) {
+                setModeReadOnly(true);
+                setAutoSyncEnabled(false);
+                showToast('TOKEN EXPIRÉ - Mode lecture seule activé. Reconnectez-vous.', 'error');
+            } else {
+                showToast('❌ Erreur lors de la sauvegarde', 'error');
+            }
         }
     };
 
@@ -747,7 +722,7 @@ const PhytoTracker = () => {
 
             return () => clearInterval(interval);
         }
-    }, [autoSyncEnabled, googleDriveConnected, sharedFolderId, parcelles, operateurs, machines, produitsDisponibles, compteursIlots, compteursDesherbage]);
+    }, [autoSyncEnabled, googleDriveConnected, sharedFolderId, parcelles, operateurs, machines]);
 
     // Sauvegarder automatiquement à chaque modification si auto-sync est activé
     useEffect(() => {
@@ -758,7 +733,7 @@ const PhytoTracker = () => {
 
             return () => clearTimeout(timeoutId);
         }
-    }, [parcelles, operateurs, machines, produitsDisponibles, compteursIlots, compteursDesherbage]);
+    }, [parcelles, operateurs, machines]);
 
     // Calcul de l'IFT pour un produit
     const calculerIFT = (produit, doseUtilisee) => {
@@ -1084,6 +1059,7 @@ const PhytoTracker = () => {
     };
 
     const ajouterTraitement = (parcelleId) => {
+        if (!verifierModificationAutorisee()) return;
         setParcelles(parcelles.map(p => {
             if (p.id === parcelleId && p.traitements.length < 20) {
                 return {
@@ -1095,41 +1071,18 @@ const PhytoTracker = () => {
                         operateur1: '',
                         machine: '',
                         debit: '',
-                        vitesse: '',
-                        commentaire: '',
-                        type: 'traitement' // Type de traitement
+                        vitesse: ''
                     }]
                 };
             }
             return p;
         }));
         showToast('Traitement ajouté');
-    };
-
-    const ajouterDesherbage = (parcelleId) => {
-        setParcelles(parcelles.map(p => {
-            if (p.id === parcelleId && p.traitements.length < 20) {
-                return {
-                    ...p,
-                    traitements: [...p.traitements, {
-                        id: Date.now(),
-                        date: '',
-                        produits: [{ produit: '', numeroLot: '', doseHa: '' }],
-                        operateur1: '',
-                        machine: '',
-                        debit: '',
-                        vitesse: '',
-                        commentaire: '',
-                        type: 'desherbage' // Type désherbage
-                    }]
-                };
-            }
-            return p;
-        }));
-        showToast('Désherbage ajouté');
+        setDerniereCopie(null);
     };
 
     const supprimerTraitement = (parcelleId, traitementId) => {
+        if (!verifierModificationAutorisee()) return;
         if (confirm('Supprimer ce traitement ?')) {
             setParcelles(parcelles.map(p => {
                 if (p.id === parcelleId) {
@@ -1141,6 +1094,7 @@ const PhytoTracker = () => {
                 return p;
             }));
             showToast('Traitement supprimé');
+            setDerniereCopie(null);
         }
     };
 
@@ -1151,6 +1105,7 @@ const PhytoTracker = () => {
     };
 
     const modifierTraitement = (parcelleId, traitementId, champ, valeur) => {
+        if (!verifierModificationAutorisee()) return;
         setParcelles(parcelles.map(p => {
             if (p.id === parcelleId) {
                 return {
@@ -1229,6 +1184,47 @@ const PhytoTracker = () => {
     const ouvrirModaleCopie = (parcelleId, traitementId) => {
         const parcelle = parcelles.find(p => p.id === parcelleId);
         const traitement = parcelle.traitements.find(t => t.id === traitementId);
+        
+        // Validation simple : vérifier les champs obligatoires
+        const champsManquants = [];
+        
+        if (!traitement.date) {
+            champsManquants.push('Date');
+        }
+        
+        if (!traitement.operateur1) {
+            champsManquants.push('Opérateur');
+        }
+        
+        if (!traitement.machine) {
+            champsManquants.push('Machine');
+        }
+        
+        if (!traitement.debit) {
+            champsManquants.push('Débit');
+        }
+        
+        // Vérifier qu'il y a au moins un produit avec un nom
+        let aUnProduit = false;
+        if (traitement.produits && traitement.produits.length > 0) {
+            for (let i = 0; i < traitement.produits.length; i++) {
+                if (traitement.produits[i].produit) {
+                    aUnProduit = true;
+                    break;
+                }
+            }
+        }
+        
+        if (!aUnProduit) {
+            champsManquants.push('Au moins un produit');
+        }
+        
+        if (champsManquants.length > 0) {
+            const message = 'Impossible de copier : champs manquants - ' + champsManquants.join(', ');
+            showToast(message, 'error');
+            return;
+        }
+        
         setTraitementACopier({ parcelleId, traitementId, traitement });
         setShowCopyModal(true);
         setParcellesSelectionnees([]);
@@ -1259,11 +1255,15 @@ const PhytoTracker = () => {
     const copierTraitement = () => {
         if (!traitementACopier || parcellesSelectionnees.length === 0) return;
 
-        // Deep clone du traitement pour copier tous les tableaux imbriqués (produits, etc.)
-        const nouveauTraitement = JSON.parse(JSON.stringify(traitementACopier.traitement));
-        nouveauTraitement.id = Date.now();
+        // Sauvegarder état avant copie
+        const etatAvant = JSON.parse(JSON.stringify(parcelles));
 
-        setParcelles(parcelles.map(p => {
+        const nouveauTraitement = {
+            ...traitementACopier.traitement,
+            id: Date.now()
+        };
+
+        const nouvellesParcelles = parcelles.map(p => {
             if (parcellesSelectionnees.includes(p.id) && p.traitements.length < 20) {
                 return {
                     ...p,
@@ -1274,12 +1274,27 @@ const PhytoTracker = () => {
                 };
             }
             return p;
-        }));
+        });
+
+        setParcelles(nouvellesParcelles);
+
+        // Sauvegarder infos pour annulation
+        setDerniereCopie({
+            etatAvant: etatAvant,
+            nbParcelles: parcellesSelectionnees.length
+        });
 
         showToast(`Traitement copié vers ${parcellesSelectionnees.length} parcelle(s)`);
         setShowCopyModal(false);
         setTraitementACopier(null);
         setParcellesSelectionnees([]);
+    };
+
+    const annulerDerniereCopie = () => {
+        if (!derniereCopie) return;
+        setParcelles(derniereCopie.etatAvant);
+        showToast('Copie annulée (' + derniereCopie.nbParcelles + ' parcelles restaurées)');
+        setDerniereCopie(null);
     };
 
     // Filtrage des parcelles
@@ -1310,6 +1325,28 @@ const PhytoTracker = () => {
                 </div>
             )}
             
+            {modeReadOnly && (
+                <div className="max-w-7xl mx-auto mb-4">
+                    <div className="bg-red-600 text-white p-4 rounded-lg shadow-xl border-2 border-red-700">
+                        <div className="flex items-center gap-3">
+                            <AlertTriangle size={32} />
+                            <div className="flex-1">
+                                <h3 className="text-xl font-bold mb-1">MODE LECTURE SEULE</h3>
+                                <p className="text-sm">
+                                    Session Google Drive expirée. Toute modification est bloquée.
+                                    Reconnectez-vous immédiatement.
+                                </p>
+                            </div>
+                            <button
+                                onClick={connecterGoogleDrive}
+                                className="bg-white text-red-600 px-6 py-3 rounded-lg font-bold hover:bg-red-50">
+                                Se reconnecter
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
+            
             <div className="max-w-7xl mx-auto">
                 {/* En-tête */}
                 <div className="card-glass rounded-2xl shadow-2xl p-6 md:p-8 mb-6">
@@ -1317,8 +1354,112 @@ const PhytoTracker = () => {
                         🍇 Registre Phytosanitaire
                     </h1>
                     
-                    {/* Google Drive Sync - Entre titre et stats */}
-                    <div className="bg-gradient-to-r from-blue-50 to-indigo-50 rounded-lg p-4 border border-blue-200 mb-6">
+                    {/* Statistiques */}
+                    <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
+                        <div className="stat-card">
+                            <div className="text-sm opacity-90 mb-1">Surface totale</div>
+                            <div className="text-3xl font-bold">{stats.surfaceTotale.toFixed(2)} ha</div>
+                        </div>
+                        <div className="stat-card">
+                            <div className="text-sm opacity-90 mb-1">Traitements</div>
+                            <div className="text-3xl font-bold">{stats.nbTraitements}</div>
+                        </div>
+                        <div className="stat-card">
+                            <div className="text-sm opacity-90 mb-1">IFT Total</div>
+                            <div className="text-3xl font-bold">{stats.iftTotal.toFixed(2)}</div>
+                        </div>
+                        <div className="stat-card">
+                            <div className="text-sm opacity-90 mb-1">Parcelles</div>
+                            <div className="text-3xl font-bold">{parcelles.length}</div>
+                        </div>
+                    </div>
+
+                    {/* Contrôles */}
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-6">
+                        <div>
+                            <label className="block text-sm font-semibold text-gray-700 mb-2">Année</label>
+                            <select
+                                value={annee}
+                                onChange={(e) => changerAnnee(parseInt(e.target.value))}
+                                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent">
+                                {[2023, 2024, 2025, 2026].map(y => (
+                                    <option key={y} value={y}>{y}</option>
+                                ))}
+                            </select>
+                        </div>
+                        <div>
+                            <label className="block text-sm font-semibold text-gray-700 mb-2">Opérateur 1</label>
+                            <input
+                                type="text"
+                                value={operateurs[0]}
+                                onChange={(e) => setOperateurs([e.target.value, operateurs[1]])}
+                                placeholder="Nom de l'opérateur"
+                                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"/>
+                        </div>
+                        <div>
+                            <label className="block text-sm font-semibold text-gray-700 mb-2">Opérateur 2</label>
+                            <input
+                                type="text"
+                                value={operateurs[1]}
+                                onChange={(e) => setOperateurs([operateurs[0], e.target.value])}
+                                placeholder="Nom de l'opérateur"
+                                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"/>
+                        </div>
+                    </div>
+                    
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+                        <div className="flex items-end gap-2">
+                            <button
+                                onClick={exporterCSV}
+                                className="btn-primary flex-1 text-white px-4 py-2 rounded-lg font-semibold flex items-center justify-center gap-2">
+                                <Download /> Export CSV
+                            </button>
+                            <label className="btn-primary flex-1 text-white px-4 py-2 rounded-lg font-semibold flex items-center justify-center gap-2 cursor-pointer">
+                                <Upload /> Import CSV
+                                <input
+                                    type="file"
+                                    accept=".csv"
+                                    onChange={importerCSV}
+                                    className="hidden"/>
+                            </label>
+                        </div>
+                        <div className="flex items-end">
+                            {derniereCopie ? (
+                                <button
+                                    onClick={annulerDerniereCopie}
+                                    className="w-full bg-orange-600 hover:bg-orange-700 text-white px-4 py-2 rounded-lg font-semibold flex items-center justify-center gap-2 transition-all hover:shadow-lg">
+                                    <Trash2 /> Annuler dernière copie
+                                </button>
+                            ) : (
+                                <button
+                                    onClick={() => setShowGestionParcelles(true)}
+                                    className="w-full bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg font-semibold flex items-center justify-center gap-2 transition-all hover:shadow-lg">
+                                    <Settings /> Gérer les parcelles
+                                </button>
+                            )}
+                        </div>
+                        <div className="flex items-end">
+                            <button
+                                onClick={reinitialiserParcelles}
+                                className="w-full bg-orange-600 hover:bg-orange-700 text-white px-4 py-2 rounded-lg font-semibold flex items-center justify-center gap-2 transition-all hover:shadow-lg">
+                                <RefreshCw /> Réinitialiser
+                            </button>
+                        </div>
+                    </div>
+
+                    {/* Recherche */}
+                    <div className="relative">
+                        <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
+                        <input
+                            type="text"
+                            value={searchTerm}
+                            onChange={(e) => setSearchTerm(e.target.value)}
+                            placeholder="Rechercher une parcelle, un îlot ou un produit..."
+                            className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"/>
+                    </div>
+
+                    {/* Google Drive Sync */}
+                    <div className="bg-gradient-to-r from-blue-50 to-indigo-50 rounded-lg p-4 border border-blue-200">
                         <div className="flex items-center justify-between mb-3">
                             <div className="flex items-center gap-2">
                                 {googleDriveConnected ? <Cloud className="text-blue-600" /> : <CloudOff className="text-gray-400" />}
@@ -1375,235 +1516,6 @@ const PhytoTracker = () => {
                             </p>
                         )}
                     </div>
-                    
-                    {/* Statistiques */}
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
-                        <div className="stat-card">
-                            <div className="text-sm opacity-90 mb-3">Statistiques générales</div>
-                            <div className="space-y-3">
-                                <div className="flex justify-between items-center">
-                                    <span className="text-sm text-gray-600">Surface totale:</span>
-                                    <span className="text-2xl font-bold text-gray-800">{stats.surfaceTotale.toFixed(2)} ha</span>
-                                </div>
-                                <div className="flex justify-between items-center">
-                                    <span className="text-sm text-gray-600">IFT Total:</span>
-                                    <span className="text-2xl font-bold text-gray-800">{stats.iftTotal.toFixed(2)}</span>
-                                </div>
-                                <div className="flex justify-between items-center">
-                                    <span className="text-sm text-gray-600">Parcelles:</span>
-                                    <span className="text-2xl font-bold text-gray-800">{parcelles.length}</span>
-                                </div>
-                            </div>
-                        </div>
-                        <div className="stat-card">
-                            <div className="flex justify-between items-center mb-3">
-                                <div className="text-sm opacity-90">Traitements par îlot</div>
-                                <button
-                                    onClick={() => {
-                                        const nouveauxCompteurs = {...compteursIlots};
-                                        ilots.forEach(ilot => {
-                                            nouveauxCompteurs[ilot.nom] = (nouveauxCompteurs[ilot.nom] || 0) + 1;
-                                        });
-                                        setCompteursIlots(nouveauxCompteurs);
-                                    }}
-                                    className="bg-blue-500 hover:bg-blue-600 text-white px-3 py-1 rounded-lg font-semibold text-xs transition-colors flex items-center gap-1"
-                                    title="Ajouter 1 traitement à tous les îlots">
-                                    <Plus size={14} /> Tous +1
-                                </button>
-                            </div>
-                            <div className="text-sm space-y-2 max-h-64 overflow-y-auto">
-                                {ilots.map(ilot => (
-                                    <div key={ilot.nom} className="flex justify-between items-center">
-                                        <span className="font-medium">{ilot.nom}:</span>
-                                        <div className="flex items-center gap-2">
-                                            <button
-                                                onClick={() => setCompteursIlots({...compteursIlots, [ilot.nom]: Math.max(0, (compteursIlots[ilot.nom] || 0) - 1)})}
-                                                className="bg-red-500 hover:bg-red-600 text-white rounded-full w-6 h-6 flex items-center justify-center font-bold text-xs transition-colors"
-                                                title="Décrémenter">
-                                                -
-                                            </button>
-                                            <span className="font-bold min-w-[30px] text-center">{compteursIlots[ilot.nom] || 0}</span>
-                                            <button
-                                                onClick={() => setCompteursIlots({...compteursIlots, [ilot.nom]: (compteursIlots[ilot.nom] || 0) + 1})}
-                                                className="bg-green-500 hover:bg-green-600 text-white rounded-full w-6 h-6 flex items-center justify-center font-bold text-xs transition-colors"
-                                                title="Incrémenter">
-                                                +
-                                            </button>
-                                        </div>
-                                    </div>
-                                ))}
-                            </div>
-                        </div>
-                        <div className="stat-card">
-                            <div className="text-sm opacity-90 mb-3">Désherbages par îlot et saison</div>
-                            <div className="text-xs space-y-1.5 max-h-64 overflow-y-auto">
-                                {ilots.map(ilot => (
-                                    <div key={ilot.nom} className="flex items-center justify-between gap-2 bg-gray-50 rounded px-2 py-1">
-                                        <span className="font-semibold text-gray-700 text-xs min-w-[60px]">{ilot.nom}</span>
-                                        <div className="flex items-center gap-1.5">
-                                            {/* Hiver */}
-                                            <div className="flex items-center gap-0.5 bg-blue-50 rounded px-1.5 py-0.5">
-                                                <span className="text-blue-700 font-medium text-[10px]">H</span>
-                                                <button
-                                                    onClick={() => setCompteursDesherbage({
-                                                        ...compteursDesherbage, 
-                                                        [ilot.nom]: {
-                                                            ...(compteursDesherbage[ilot.nom] || {}),
-                                                            hiver: Math.max(0, (compteursDesherbage[ilot.nom]?.hiver || 0) - 1)
-                                                        }
-                                                    })}
-                                                    className="bg-red-400 hover:bg-red-500 text-white rounded w-4 h-4 flex items-center justify-center text-[10px]">
-                                                    -
-                                                </button>
-                                                <span className="font-bold text-[11px] min-w-[16px] text-center text-gray-800">{compteursDesherbage[ilot.nom]?.hiver || 0}</span>
-                                                <button
-                                                    onClick={() => setCompteursDesherbage({
-                                                        ...compteursDesherbage, 
-                                                        [ilot.nom]: {
-                                                            ...(compteursDesherbage[ilot.nom] || {}),
-                                                            hiver: (compteursDesherbage[ilot.nom]?.hiver || 0) + 1
-                                                        }
-                                                    })}
-                                                    className="bg-blue-500 hover:bg-blue-600 text-white rounded w-4 h-4 flex items-center justify-center text-[10px]">
-                                                    +
-                                                </button>
-                                            </div>
-                                            {/* Printemps */}
-                                            <div className="flex items-center gap-0.5 bg-green-50 rounded px-1.5 py-0.5">
-                                                <span className="text-green-700 font-medium text-[10px]">P</span>
-                                                <button
-                                                    onClick={() => setCompteursDesherbage({
-                                                        ...compteursDesherbage, 
-                                                        [ilot.nom]: {
-                                                            ...(compteursDesherbage[ilot.nom] || {}),
-                                                            printemps: Math.max(0, (compteursDesherbage[ilot.nom]?.printemps || 0) - 1)
-                                                        }
-                                                    })}
-                                                    className="bg-red-400 hover:bg-red-500 text-white rounded w-4 h-4 flex items-center justify-center text-[10px]">
-                                                    -
-                                                </button>
-                                                <span className="font-bold text-[11px] min-w-[16px] text-center text-gray-800">{compteursDesherbage[ilot.nom]?.printemps || 0}</span>
-                                                <button
-                                                    onClick={() => setCompteursDesherbage({
-                                                        ...compteursDesherbage, 
-                                                        [ilot.nom]: {
-                                                            ...(compteursDesherbage[ilot.nom] || {}),
-                                                            printemps: (compteursDesherbage[ilot.nom]?.printemps || 0) + 1
-                                                        }
-                                                    })}
-                                                    className="bg-green-500 hover:bg-green-600 text-white rounded w-4 h-4 flex items-center justify-center text-[10px]">
-                                                    +
-                                                </button>
-                                            </div>
-                                            {/* Été */}
-                                            <div className="flex items-center gap-0.5 bg-orange-50 rounded px-1.5 py-0.5">
-                                                <span className="text-orange-700 font-medium text-[10px]">E</span>
-                                                <button
-                                                    onClick={() => setCompteursDesherbage({
-                                                        ...compteursDesherbage, 
-                                                        [ilot.nom]: {
-                                                            ...(compteursDesherbage[ilot.nom] || {}),
-                                                            ete: Math.max(0, (compteursDesherbage[ilot.nom]?.ete || 0) - 1)
-                                                        }
-                                                    })}
-                                                    className="bg-red-400 hover:bg-red-500 text-white rounded w-4 h-4 flex items-center justify-center text-[10px]">
-                                                    -
-                                                </button>
-                                                <span className="font-bold text-[11px] min-w-[16px] text-center text-gray-800">{compteursDesherbage[ilot.nom]?.ete || 0}</span>
-                                                <button
-                                                    onClick={() => setCompteursDesherbage({
-                                                        ...compteursDesherbage, 
-                                                        [ilot.nom]: {
-                                                            ...(compteursDesherbage[ilot.nom] || {}),
-                                                            ete: (compteursDesherbage[ilot.nom]?.ete || 0) + 1
-                                                        }
-                                                    })}
-                                                    className="bg-orange-500 hover:bg-orange-600 text-white rounded w-4 h-4 flex items-center justify-center text-[10px]">
-                                                    +
-                                                </button>
-                                            </div>
-                                        </div>
-                                    </div>
-                                ))}
-                            </div>
-                        </div>
-                    </div>
-
-                    {/* Contrôles */}
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-6">
-                        <div>
-                            <label className="block text-sm font-semibold text-gray-700 mb-2">Année</label>
-                            <select
-                                value={annee}
-                                onChange={(e) => changerAnnee(parseInt(e.target.value))}
-                                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent">
-                                {[2023, 2024, 2025, 2026].map(y => (
-                                    <option key={y} value={y}>{y}</option>
-                                ))}
-                            </select>
-                        </div>
-                        <div>
-                            <label className="block text-sm font-semibold text-gray-700 mb-2">Opérateur 1</label>
-                            <input
-                                type="text"
-                                value={operateurs[0]}
-                                onChange={(e) => setOperateurs([e.target.value, operateurs[1]])}
-                                placeholder="Nom de l'opérateur"
-                                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"/>
-                        </div>
-                        <div>
-                            <label className="block text-sm font-semibold text-gray-700 mb-2">Opérateur 2</label>
-                            <input
-                                type="text"
-                                value={operateurs[1]}
-                                onChange={(e) => setOperateurs([operateurs[0], e.target.value])}
-                                placeholder="Nom de l'opérateur"
-                                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"/>
-                        </div>
-                    </div>
-                    
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
-                        <div className="flex items-end gap-2">
-                            <button
-                                onClick={exporterCSV}
-                                className="btn-primary flex-1 text-white px-4 py-2 rounded-lg font-semibold flex items-center justify-center gap-2">
-                                <Download /> Export CSV
-                            </button>
-                            <label className="btn-primary flex-1 text-white px-4 py-2 rounded-lg font-semibold flex items-center justify-center gap-2 cursor-pointer">
-                                <Upload /> Import CSV
-                                <input
-                                    type="file"
-                                    accept=".csv"
-                                    onChange={importerCSV}
-                                    className="hidden"/>
-                            </label>
-                        </div>
-                        <div className="flex items-end">
-                            <button
-                                onClick={() => setShowGestionParcelles(true)}
-                                className="w-full bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg font-semibold flex items-center justify-center gap-2 transition-all hover:shadow-lg">
-                                <Settings /> Gérer les parcelles
-                            </button>
-                        </div>
-                        <div className="flex items-end">
-                            <button
-                                onClick={() => setShowGestionProduits(true)}
-                                className="w-full bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded-lg font-semibold flex items-center justify-center gap-2 transition-all hover:shadow-lg">
-                                <Settings /> Gérer les produits
-                            </button>
-                        </div>
-                    </div>
-
-                    {/* Recherche */}
-                    <div className="relative">
-                        <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
-                        <input
-                            type="text"
-                            value={searchTerm}
-                            onChange={(e) => setSearchTerm(e.target.value)}
-                            placeholder="Rechercher une parcelle, un îlot ou un produit..."
-                            className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"/>
-                    </div>
                 </div>
 
                 {/* Configuration des machines */}
@@ -1623,16 +1535,28 @@ const PhytoTracker = () => {
                                     }}
                                     placeholder="Nom"
                                     className="w-full px-3 py-2 border border-gray-300 rounded mb-2"/>
-                                <input
-                                    type="text"
-                                    value={machine.vitesse}
-                                    onChange={(e) => {
-                                        const newMachines = [...machines];
-                                        newMachines[idx].vitesse = e.target.value;
-                                        setMachines(newMachines);
-                                    }}
-                                    placeholder="Vitesse (km/h)"
-                                    className="w-full px-3 py-2 border border-gray-300 rounded"/>
+                                <div className="grid grid-cols-2 gap-2">
+                                    <input
+                                        type="text"
+                                        value={machine.debit}
+                                        onChange={(e) => {
+                                            const newMachines = [...machines];
+                                            newMachines[idx].debit = e.target.value;
+                                            setMachines(newMachines);
+                                        }}
+                                        placeholder="Débit (L/min)"
+                                        className="w-full px-3 py-2 border border-gray-300 rounded"/>
+                                    <input
+                                        type="text"
+                                        value={machine.vitesse}
+                                        onChange={(e) => {
+                                            const newMachines = [...machines];
+                                            newMachines[idx].vitesse = e.target.value;
+                                            setMachines(newMachines);
+                                        }}
+                                        placeholder="Vitesse (km/h)"
+                                        className="w-full px-3 py-2 border border-gray-300 rounded"/>
+                                </div>
                             </div>
                         ))}
                     </div>
@@ -1661,6 +1585,9 @@ const PhytoTracker = () => {
                                         <span className="bg-white bg-opacity-20 px-3 py-1 rounded-full text-sm">
                                             {surfaceIlot.toFixed(2)} ha
                                         </span>
+                                        <span className="bg-white bg-opacity-20 px-3 py-1 rounded-full text-sm">
+                                            {nbTraitements} traitements
+                                        </span>
                                     </div>
                                     {isOpen ? <ChevronUp /> : <ChevronDown />}
                                 </button>
@@ -1688,22 +1615,14 @@ const PhytoTracker = () => {
                                                             onChange={(e) => modifierParcelle(parcelle.id, 'surface', e.target.value)}
                                                             className="w-full px-3 py-2 border border-gray-300 rounded-lg"/>
                                                     </div>
-                                                    <div className="flex gap-2 flex-shrink-0">
+                                                    <div className="flex-shrink-0">
                                                         <label className="block text-sm font-semibold text-gray-700 mb-1">&nbsp;</label>
-                                                        <div className="flex gap-2">
-                                                            <button
-                                                                onClick={() => ajouterTraitement(parcelle.id)}
-                                                                disabled={parcelle.traitements.length >= 20}
-                                                                className="btn-primary text-white px-4 py-2 rounded-lg font-semibold flex items-center gap-2 disabled:opacity-50">
-                                                                <Plus /> Ajouter traitement
-                                                            </button>
-                                                            <button
-                                                                onClick={() => ajouterDesherbage(parcelle.id)}
-                                                                disabled={parcelle.traitements.length >= 20}
-                                                                className="bg-amber-600 hover:bg-amber-700 text-white px-4 py-2 rounded-lg font-semibold flex items-center gap-2 disabled:opacity-50">
-                                                                <Plus /> Ajouter désherbage
-                                                            </button>
-                                                        </div>
+                                                        <button
+                                                            onClick={() => ajouterTraitement(parcelle.id)}
+                                                            disabled={parcelle.traitements.length >= 20}
+                                                            className="btn-primary text-white px-4 py-2 rounded-lg font-semibold flex items-center gap-2 disabled:opacity-50">
+                                                            <Plus /> Ajouter traitement
+                                                        </button>
                                                     </div>
                                                 </div>
 
@@ -1713,25 +1632,13 @@ const PhytoTracker = () => {
                                                         {parcelle.traitements.map((traitement, traitementIndex) => {
                                                             const iftTotal = calculerIFTTraitement(traitement.produits);
                                                             
-                                                            // Calculer les compteurs séparés
-                                                            const traitementsPrecedents = parcelle.traitements.slice(0, traitementIndex);
-                                                            const typeTraitement = traitement.type || 'traitement'; // Valeur par défaut
-                                                            const numTraitement = typeTraitement === 'desherbage' 
-                                                                ? traitementsPrecedents.filter(t => (t.type || 'traitement') === 'desherbage').length + 1
-                                                                : traitementsPrecedents.filter(t => (t.type || 'traitement') !== 'desherbage').length + 1;
-                                                            
                                                             return (
                                                                 <div key={traitement.id} className="traitement-card bg-gray-50 rounded-lg p-4">
                                                                     <div className="flex items-start justify-between mb-3">
                                                                         <div className="flex items-center gap-3">
-                                                                            <div className={`${typeTraitement === 'desherbage' ? 'bg-amber-600' : 'bg-green-600'} text-white rounded-full w-8 h-8 flex items-center justify-center font-bold text-sm flex-shrink-0`}>
-                                                                                {numTraitement}
+                                                                            <div className="bg-green-600 text-white rounded-full w-8 h-8 flex items-center justify-center font-bold text-sm flex-shrink-0">
+                                                                                {traitementIndex + 1}
                                                                             </div>
-                                                                            {typeTraitement === 'desherbage' && (
-                                                                                <div className="bg-amber-100 text-amber-800 px-2 py-1 rounded text-xs font-semibold">
-                                                                                    DÉSHERBAGE
-                                                                                </div>
-                                                                            )}
                                                                             <Calendar className="text-gray-600" />
                                                                             <input
                                                                                 type="date"
@@ -1792,6 +1699,7 @@ const PhytoTracker = () => {
                                                                                                         return {
                                                                                                             ...t,
                                                                                                             machine: nomMachine,
+                                                                                                            debit: selectedMachine?.debit || t.debit,
                                                                                                             vitesse: selectedMachine?.vitesse || t.vitesse
                                                                                                         };
                                                                                                     }
@@ -1806,20 +1714,10 @@ const PhytoTracker = () => {
                                                                                 <option value="">Sélectionner</option>
                                                                                 {machines.filter(m => m.nom && m.nom.trim() !== '').map((m, idx) => (
                                                                                     <option key={idx} value={m.nom}>
-                                                                                        {m.nom} {m.vitesse ? `(${m.vitesse}km/h)` : ''}
+                                                                                        {m.nom} {m.debit && m.vitesse ? `(${m.debit}L/min, ${m.vitesse}km/h)` : ''}
                                                                                     </option>
                                                                                 ))}
                                                                             </select>
-                                                                        </div>
-                                                                        <div>
-                                                                            <label className="block text-xs font-semibold text-gray-700 mb-1">Débit (L/ha)</label>
-                                                                            <input
-                                                                                type="number"
-                                                                                step="0.1"
-                                                                                value={traitement.debit}
-                                                                                onChange={(e) => modifierTraitement(parcelle.id, traitement.id, 'debit', e.target.value)}
-                                                                                placeholder="L/ha"
-                                                                                className="w-full px-2 py-1 border border-gray-300 rounded text-sm"/>
                                                                         </div>
                                                                     </div>
 
@@ -1827,11 +1725,12 @@ const PhytoTracker = () => {
                                                                     <div className="bg-white p-3 rounded-lg border border-gray-200">
                                                                         <div className="flex items-center justify-between mb-2">
                                                                             <label className="text-sm font-semibold text-gray-700">
-                                                                                Produits ({traitement.produits.length})
+                                                                                Produits ({traitement.produits.length}/5)
                                                                             </label>
                                                                             <button
                                                                                 onClick={() => ajouterProduit(parcelle.id, traitement.id)}
-                                                                                className="text-sm text-green-600 hover:text-green-800 font-semibold">
+                                                                                disabled={traitement.produits.length >= 5}
+                                                                                className="text-sm text-green-600 hover:text-green-800 disabled:text-gray-400 font-semibold">
                                                                                 + Ajouter produit
                                                                             </button>
                                                                         </div>
@@ -1842,76 +1741,18 @@ const PhytoTracker = () => {
                                                                                 
                                                                                 return (
                                                                                     <div key={pIdx} className="grid grid-cols-12 gap-2 items-center">
-                                                                                        <div className="col-span-4 relative">
-                                                                                            <input
-                                                                                                type="text"
-                                                                                                value={searchProduit[`${parcelle.id}-${traitement.id}-${pIdx}`] !== undefined 
-                                                                                                    ? searchProduit[`${parcelle.id}-${traitement.id}-${pIdx}`] 
-                                                                                                    : produit.produit}
-                                                                                                onChange={(e) => {
-                                                                                                    const key = `${parcelle.id}-${traitement.id}-${pIdx}`;
-                                                                                                    setSearchProduit({...searchProduit, [key]: e.target.value});
-                                                                                                    setShowSuggestions({...showSuggestions, [key]: true});
-                                                                                                }}
-                                                                                                onFocus={(e) => {
-                                                                                                    const key = `${parcelle.id}-${traitement.id}-${pIdx}`;
-                                                                                                    setShowSuggestions({...showSuggestions, [key]: true});
-                                                                                                }}
-                                                                                                onBlur={() => {
-                                                                                                    setTimeout(() => {
-                                                                                                        const key = `${parcelle.id}-${traitement.id}-${pIdx}`;
-                                                                                                        setShowSuggestions({...showSuggestions, [key]: false});
-                                                                                                    }, 200);
-                                                                                                }}
-                                                                                                placeholder="Rechercher un produit..."
-                                                                                                className="w-full px-2 py-1 border border-gray-300 rounded text-sm"
-                                                                                            />
-                                                                                            {showSuggestions[`${parcelle.id}-${traitement.id}-${pIdx}`] && (
-                                                                                                <div className="absolute z-50 w-full mt-1 bg-white border border-gray-300 rounded-lg shadow-lg max-h-60 overflow-y-auto">
-                                                                                                    {produitsDisponibles
-                                                                                                        .filter(p => {
-                                                                                                            // Filtrer par type de traitement
-                                                                                                            const typeTraitement = traitement.type || 'traitement';
-                                                                                                            if (typeTraitement === 'desherbage') {
-                                                                                                                // Désherbage : UNIQUEMENT herbicides
-                                                                                                                if (p.categorie !== 'Herbicide') return false;
-                                                                                                            } else {
-                                                                                                                // Traitement normal : EXCLURE herbicides
-                                                                                                                if (p.categorie === 'Herbicide') return false;
-                                                                                                            }
-                                                                                                            const searchTerm = (searchProduit[`${parcelle.id}-${traitement.id}-${pIdx}`] || '').toLowerCase();
-                                                                                                            return p.nom.toLowerCase().includes(searchTerm) || 
-                                                                                                                   p.categorie.toLowerCase().includes(searchTerm);
-                                                                                                        })
-                                                                                                        .slice(0, 10)
-                                                                                                        .map((p, idx) => (
-                                                                                                            <div
-                                                                                                                key={idx}
-                                                                                                                onClick={() => {
-                                                                                                                    modifierProduit(parcelle.id, traitement.id, pIdx, 'produit', p.nom);
-                                                                                                                    const key = `${parcelle.id}-${traitement.id}-${pIdx}`;
-                                                                                                                    setSearchProduit({...searchProduit, [key]: p.nom});
-                                                                                                                    setShowSuggestions({...showSuggestions, [key]: false});
-                                                                                                                }}
-                                                                                                                className="px-3 py-2 hover:bg-green-50 cursor-pointer border-b border-gray-100 last:border-b-0"
-                                                                                                            >
-                                                                                                                <div className="font-semibold text-sm">{p.nom}</div>
-                                                                                                                <div className="text-xs text-gray-500">
-                                                                                                                    {p.categorie} - Dose ref: {p.doseRef} {p.unite}
-                                                                                                                </div>
-                                                                                                            </div>
-                                                                                                        ))}
-                                                                                                    {produitsDisponibles.filter(p => {
-                                                                                                        const searchTerm = (searchProduit[`${parcelle.id}-${traitement.id}-${pIdx}`] || '').toLowerCase();
-                                                                                                        return p.nom.toLowerCase().includes(searchTerm) || 
-                                                                                                               p.categorie.toLowerCase().includes(searchTerm);
-                                                                                                    }).length === 0 && (
-                                                                                                        <div className="px-3 py-2 text-sm text-gray-500 italic">
-                                                                                                            Aucun produit trouvé
-                                                                                                        </div>
-                                                                                                    )}
-                                                                                                </div>
-                                                                                            )}
+                                                                                        <div className="col-span-4">
+                                                                                            <select
+                                                                                                value={produit.produit}
+                                                                                                onChange={(e) => modifierProduit(parcelle.id, traitement.id, pIdx, 'produit', e.target.value)}
+                                                                                                className="w-full px-2 py-1 border border-gray-300 rounded text-sm">
+                                                                                                <option value="">Sélectionner</option>
+                                                                                                {produitsDisponibles.map((p, idx) => (
+                                                                                                    <option key={idx} value={p.nom}>
+                                                                                                        {p.nom}
+                                                                                                    </option>
+                                                                                                ))}
+                                                                                            </select>
                                                                                         </div>
                                                                                         <div className="col-span-3">
                                                                                             <input
@@ -1950,18 +1791,6 @@ const PhytoTracker = () => {
                                                                                 );
                                                                             })}
                                                                         </div>
-                                                                    </div>
-                                                                    
-                                                                    {/* Commentaire */}
-                                                                    <div className="mt-3">
-                                                                        <label className="block text-xs font-semibold text-gray-700 mb-1">Commentaire / Notes</label>
-                                                                        <textarea
-                                                                            value={traitement.commentaire || ''}
-                                                                            onChange={(e) => modifierTraitement(parcelle.id, traitement.id, 'commentaire', e.target.value)}
-                                                                            placeholder="Conditions météo, observations, remarques..."
-                                                                            rows="2"
-                                                                            className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm resize-none"
-                                                                        />
                                                                     </div>
                                                                 </div>
                                                             );
@@ -2109,103 +1938,6 @@ const PhytoTracker = () => {
                             <button
                                 onClick={() => setShowGestionParcelles(false)}
                                 className="bg-green-600 hover:bg-green-700 text-white px-6 py-2 rounded-lg font-semibold">
-                                Fermer
-                            </button>
-                        </div>
-                    </div>
-                </div>
-            )}
-
-            {/* Modal de gestion des produits */}
-            {showGestionProduits && (
-                <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-                    <div className="bg-white rounded-2xl p-6 max-w-5xl w-full max-h-[80vh] overflow-y-auto shadow-2xl">
-                        <div className="flex items-center justify-between mb-6">
-                            <h3 className="text-2xl font-bold text-gray-800">Gestion des produits phytosanitaires</h3>
-                            <button
-                                onClick={() => setShowGestionProduits(false)}
-                                className="text-gray-500 hover:text-gray-700 text-2xl font-bold">
-                                ×
-                            </button>
-                        </div>
-                        
-                        <div className="mb-6 flex gap-3">
-                            <button
-                                onClick={ajouterProduitListe}
-                                className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg font-semibold flex items-center gap-2">
-                                <Plus size={18} /> Ajouter un produit
-                            </button>
-                            <button
-                                onClick={reinitialiserProduits}
-                                className="bg-orange-600 hover:bg-orange-700 text-white px-4 py-2 rounded-lg font-semibold">
-                                Réinitialiser la liste
-                            </button>
-                        </div>
-                        
-                        <div className="mb-4 text-sm text-gray-600">
-                            Total : {produitsDisponibles.length} produit(s)
-                        </div>
-                        
-                        {/* Liste des produits par catégorie */}
-                        {['Fongicide', 'Insecticide', 'Herbicide', 'Adjuvant', 'Autre'].map(categorie => {
-                            const produitsCategorie = produitsDisponibles.filter(p => p.categorie === categorie);
-                            if (produitsCategorie.length === 0) return null;
-                            
-                            return (
-                                <div key={categorie} className="mb-6">
-                                    <h4 className="text-lg font-bold text-gray-700 mb-3 pb-2 border-b-2 border-gray-200">
-                                        {categorie}s ({produitsCategorie.length})
-                                    </h4>
-                                    <div className="grid grid-cols-1 gap-2">
-                                        {produitsCategorie.map((produit, idx) => {
-                                            const globalIndex = produitsDisponibles.indexOf(produit);
-                                            return (
-                                                <div key={globalIndex} className="flex items-center justify-between bg-gray-50 p-3 rounded-lg hover:bg-gray-100 transition">
-                                                    <div className="flex-1 grid grid-cols-3 gap-4">
-                                                        <div>
-                                                            <span className="font-semibold text-gray-800">{produit.nom}</span>
-                                                        </div>
-                                                        <div className="text-sm text-gray-600">
-                                                            Dose ref: <span className="font-semibold">{produit.doseRef} {produit.unite}</span>
-                                                        </div>
-                                                        <div className="text-sm text-gray-600">
-                                                            <span className={`px-2 py-1 rounded ${
-                                                                categorie === 'Fongicide' ? 'bg-blue-100 text-blue-700' :
-                                                                categorie === 'Insecticide' ? 'bg-yellow-100 text-yellow-700' :
-                                                                categorie === 'Herbicide' ? 'bg-green-100 text-green-700' :
-                                                                categorie === 'Adjuvant' ? 'bg-purple-100 text-purple-700' :
-                                                                'bg-gray-200 text-gray-700'
-                                                            }`}>
-                                                                {produit.categorie}
-                                                            </span>
-                                                        </div>
-                                                    </div>
-                                                    <div className="flex gap-2 ml-4">
-                                                        <button
-                                                            onClick={() => modifierProduitListe(globalIndex)}
-                                                            className="text-blue-600 hover:text-blue-800 p-2"
-                                                            title="Modifier">
-                                                            <Edit size={18} />
-                                                        </button>
-                                                        <button
-                                                            onClick={() => supprimerProduitListe(globalIndex)}
-                                                            className="text-red-600 hover:text-red-800 p-2"
-                                                            title="Supprimer">
-                                                            <Trash2 size={18} />
-                                                        </button>
-                                                    </div>
-                                                </div>
-                                            );
-                                        })}
-                                    </div>
-                                </div>
-                            );
-                        })}
-                        
-                        <div className="mt-6 flex justify-end">
-                            <button
-                                onClick={() => setShowGestionProduits(false)}
-                                className="bg-purple-600 hover:bg-purple-700 text-white px-6 py-2 rounded-lg font-semibold">
                                 Fermer
                             </button>
                         </div>
