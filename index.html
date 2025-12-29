@@ -1140,7 +1140,7 @@ const PhytoTracker = () => {
             if (p.id === parcelleId && p.traitements.length < 20) {
                 return {
                     ...p,
-                    traitements: [{
+                    traitements: [...p.traitements, {
                         id: Date.now(),
                         date: '',
                         type: 'traitement',
@@ -1149,7 +1149,7 @@ const PhytoTracker = () => {
                         machine: '',
                         debit: '',
                         commentaire: ''
-                    }, ...p.traitements]
+                    }]
                 };
             }
             return p;
@@ -1164,7 +1164,7 @@ const PhytoTracker = () => {
             if (p.id === parcelleId && p.traitements.length < 20) {
                 return {
                     ...p,
-                    traitements: [{
+                    traitements: [...p.traitements, {
                         id: Date.now(),
                         date: '',
                         type: 'desherbage',
@@ -1173,7 +1173,7 @@ const PhytoTracker = () => {
                         machine: '',
                         debit: '',
                         commentaire: ''
-                    }, ...p.traitements]
+                    }]
                 };
             }
             return p;
@@ -1378,10 +1378,10 @@ const PhytoTracker = () => {
             if (parcellesSelectionnees.includes(p.id) && p.traitements.length < 20) {
                 return {
                     ...p,
-                    traitements: [{
+                    traitements: [...p.traitements, {
                         ...nouveauTraitement,
                         id: Date.now() + Math.random()
-                    }, ...p.traitements]
+                    }]
                 };
             }
             return p;
