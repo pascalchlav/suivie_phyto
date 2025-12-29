@@ -368,6 +368,10 @@ const PhytoTracker = () => {
     const [sharedFolderId, setSharedFolderId] = useState(null);
     const [modeReadOnly, setModeReadOnly] = useState(false);
     const [derniereCopie, setDerniereCopie] = useState(null);
+    
+    // États pour l'autocomplétion des produits
+    const [searchProduit, setSearchProduit] = useState({});
+    const [showSuggestions, setShowSuggestions] = useState({});
 
     // Toast notification
     const showToast = (message, type = 'success') => {
@@ -785,6 +789,17 @@ const PhytoTracker = () => {
             return () => clearTimeout(timeoutId);
         }
     }, [parcelles, operateurs, machines, produitsDisponibles]);
+    
+    // Fermer les suggestions quand on clique à l'extérieur
+    useEffect(() => {
+        const handleClickOutside = (e) => {
+            if (!e.target.closest('.autocomplete-container')) {
+                setShowSuggestions({});
+            }
+        };
+        document.addEventListener('click', handleClickOutside);
+        return () => document.removeEventListener('click', handleClickOutside);
+    }, []);
 
     // Calcul de l'IFT pour un produit
     const calculerIFT = (produit, doseUtilisee) => {
@@ -1226,6 +1241,16 @@ const PhytoTracker = () => {
     };
 
     const supprimerProduit = (parcelleId, traitementId, produitIdx) => {
+        // Nettoyer l'état de recherche pour ce produit
+        const key = `${parcelleId}-${traitementId}-${produitIdx}`;
+        const newSearchProduit = {...searchProduit};
+        delete newSearchProduit[key];
+        setSearchProduit(newSearchProduit);
+        
+        const newShowSuggestions = {...showSuggestions};
+        delete newShowSuggestions[key];
+        setShowSuggestions(newShowSuggestions);
+        
         setParcelles(parcelles.map(p => {
             if (p.id === parcelleId) {
                 return {
@@ -1370,7 +1395,8 @@ const PhytoTracker = () => {
             nbParcelles: parcellesSelectionnees.length
         });
 
-        showToast(`Traitement copié vers ${parcellesSelectionnees.length} parcelle(s)`);
+        const typeTexte = traitementACopier.traitement.type === 'desherbage' ? 'Désherbage' : 'Traitement';
+        showToast(`${typeTexte} copié vers ${parcellesSelectionnees.length} parcelle(s)`);
         setShowCopyModal(false);
         setTraitementACopier(null);
         setParcellesSelectionnees([]);
@@ -1854,28 +1880,71 @@ const PhytoTracker = () => {
                                                                                 
                                                                                 return (
                                                                                     <div key={pIdx} className="grid grid-cols-12 gap-2 items-center">
-                                                                                        <div className="col-span-4">
-                                                                                            <select
-                                                                                                value={produit.produit}
-                                                                                                onChange={(e) => modifierProduit(parcelle.id, traitement.id, pIdx, 'produit', e.target.value)}
-                                                                                                className="w-full px-2 py-1 border border-gray-300 rounded text-sm">
-                                                                                                <option value="">Sélectionner</option>
-                                                                                                {produitsDisponibles
-                                                                                                    .filter(p => {
-                                                                                                        // Désherbage : uniquement herbicides
+                                                                                        <div className="col-span-4 relative autocomplete-container">
+                                                                                            <input
+                                                                                                type="text"
+                                                                                                value={searchProduit[`${parcelle.id}-${traitement.id}-${pIdx}`] !== undefined 
+                                                                                                    ? searchProduit[`${parcelle.id}-${traitement.id}-${pIdx}`] 
+                                                                                                    : produit.produit}
+                                                                                                onChange={(e) => {
+                                                                                                    const key = `${parcelle.id}-${traitement.id}-${pIdx}`;
+                                                                                                    setSearchProduit({...searchProduit, [key]: e.target.value});
+                                                                                                    setShowSuggestions({...showSuggestions, [key]: true});
+                                                                                                }}
+                                                                                                onFocus={() => {
+                                                                                                    const key = `${parcelle.id}-${traitement.id}-${pIdx}`;
+                                                                                                    setShowSuggestions({...showSuggestions, [key]: true});
+                                                                                                }}
+                                                                                                placeholder="Rechercher un produit..."
+                                                                                                className="w-full px-2 py-1 border border-gray-300 rounded text-sm"
+                                                                                            />
+                                                                                            {showSuggestions[`${parcelle.id}-${traitement.id}-${pIdx}`] && (
+                                                                                                <div className="absolute z-10 w-full bg-white border border-gray-300 rounded-b shadow-lg max-h-48 overflow-y-auto">
+                                                                                                    {produitsDisponibles
+                                                                                                        .filter(p => {
+                                                                                                            // Filtrer selon type traitement/désherbage
+                                                                                                            if (traitement.type === 'desherbage') {
+                                                                                                                if (p.categorie !== 'Herbicide') return false;
+                                                                                                            } else {
+                                                                                                                if (p.categorie === 'Herbicide') return false;
+                                                                                                            }
+                                                                                                            // Filtrer selon recherche
+                                                                                                            const searchValue = searchProduit[`${parcelle.id}-${traitement.id}-${pIdx}`] || '';
+                                                                                                            return p.nom.toLowerCase().includes(searchValue.toLowerCase());
+                                                                                                        })
+                                                                                                        .map((p, idx) => (
+                                                                                                            <div
+                                                                                                                key={idx}
+                                                                                                                onClick={() => {
+                                                                                                                    const key = `${parcelle.id}-${traitement.id}-${pIdx}`;
+                                                                                                                    modifierProduit(parcelle.id, traitement.id, pIdx, 'produit', p.nom);
+                                                                                                                    setSearchProduit({...searchProduit, [key]: p.nom});
+                                                                                                                    setShowSuggestions({...showSuggestions, [key]: false});
+                                                                                                                }}
+                                                                                                                className="px-3 py-2 hover:bg-green-100 cursor-pointer text-sm border-b border-gray-100"
+                                                                                                            >
+                                                                                                                <div className="font-medium">{p.nom}</div>
+                                                                                                                <div className="text-xs text-gray-500">
+                                                                                                                    {p.categorie} - {p.doseRef} {p.unite}
+                                                                                                                </div>
+                                                                                                            </div>
+                                                                                                        ))
+                                                                                                    }
+                                                                                                    {produitsDisponibles.filter(p => {
                                                                                                         if (traitement.type === 'desherbage') {
-                                                                                                            return p.categorie === 'Herbicide';
+                                                                                                            if (p.categorie !== 'Herbicide') return false;
+                                                                                                        } else {
+                                                                                                            if (p.categorie === 'Herbicide') return false;
                                                                                                         }
-                                                                                                        // Traitement : tout sauf herbicides
-                                                                                                        return p.categorie !== 'Herbicide';
-                                                                                                    })
-                                                                                                    .map((p, idx) => (
-                                                                                                        <option key={idx} value={p.nom}>
-                                                                                                            {p.nom}
-                                                                                                        </option>
-                                                                                                    ))
-                                                                                                }
-                                                                                            </select>
+                                                                                                        const searchValue = searchProduit[`${parcelle.id}-${traitement.id}-${pIdx}`] || '';
+                                                                                                        return p.nom.toLowerCase().includes(searchValue.toLowerCase());
+                                                                                                    }).length === 0 && (
+                                                                                                        <div className="px-3 py-2 text-sm text-gray-500 italic">
+                                                                                                            Aucun produit trouvé
+                                                                                                        </div>
+                                                                                                    )}
+                                                                                                </div>
+                                                                                            )}
                                                                                         </div>
                                                                                         <div className="col-span-3">
                                                                                             <input
