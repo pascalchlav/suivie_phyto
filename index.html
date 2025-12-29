@@ -372,6 +372,9 @@ const PhytoTracker = () => {
     // États pour l'autocomplétion des produits
     const [searchProduit, setSearchProduit] = useState({});
     const [showSuggestions, setShowSuggestions] = useState({});
+    
+    // Mémoire des numéros de lots par produit
+    const [lotsParProduit, setLotsParProduit] = useState({});
 
     // Toast notification
     const showToast = (message, type = 'success') => {
@@ -425,7 +428,7 @@ const PhytoTracker = () => {
         
         const nouveauProduit = {
             nom: nom.trim(),
-            doseRef: parseFloat(doseRef),
+            doseRef: parseNumberFR(doseRef),
             unite: unite.trim(),
             categorie: categorie.trim()
         };
@@ -452,7 +455,7 @@ const PhytoTracker = () => {
         const nouveauxProduits = [...produitsDisponibles];
         nouveauxProduits[index] = {
             nom: nom.trim(),
-            doseRef: parseFloat(doseRef),
+            doseRef: parseNumberFR(doseRef),
             unite: unite.trim(),
             categorie: categorie.trim()
         };
@@ -647,6 +650,12 @@ const PhytoTracker = () => {
                 if (data.operateurs) setOperateurs(data.operateurs);
                 if (data.machines) setMachines(data.machines);
                 if (data.produits) setProduitsDisponibles(data.produits);
+                if (data.lotsParProduit) {
+                    setLotsParProduit(data.lotsParProduit);
+                } else if (data.parcelles) {
+                    // Si pas de mémoire de lots sauvegardée, scanner les traitements existants
+                    initialiserMemoireLots(data.parcelles);
+                }
                 
                 showToast('📥 Données chargées depuis Google Drive');
             }
@@ -654,6 +663,33 @@ const PhytoTracker = () => {
             console.error('Erreur chargement depuis Drive:', error);
             // Pas de toast d'erreur si le fichier n'existe pas encore
         }
+    };
+
+    // Initialiser la mémoire des lots en scannant tous les traitements existants
+    const initialiserMemoireLots = (parcellesData = parcelles) => {
+        const nouveauxLots = {};
+        let nbLotsInitialises = 0;
+        
+        parcellesData.forEach(parcelle => {
+            parcelle.traitements.forEach(traitement => {
+                traitement.produits.forEach(produit => {
+                    if (produit.produit && produit.numeroLot && produit.numeroLot.trim()) {
+                        // Mémoriser le lot (le dernier rencontré écrase les précédents)
+                        nouveauxLots[produit.produit] = produit.numeroLot.trim();
+                        nbLotsInitialises++;
+                    }
+                });
+            });
+        });
+        
+        setLotsParProduit(nouveauxLots);
+        
+        if (nbLotsInitialises > 0) {
+            const nbProduitsUniques = Object.keys(nouveauxLots).length;
+            showToast(`🔖 ${nbProduitsUniques} numéro(s) de lot initialisé(s) en mémoire`);
+        }
+        
+        return nouveauxLots;
     };
 
     // Sauvegarder sur Google Drive (dossier partagé)
@@ -669,6 +705,7 @@ const PhytoTracker = () => {
                 operateurs, 
                 machines,
                 produits: produitsDisponibles,
+                lotsParProduit,
                 lastUpdate: new Date().toISOString(),
                 updatedBy: 'user' // Vous pouvez ajouter le nom de l'utilisateur ici
             };
@@ -783,7 +820,7 @@ const PhytoTracker = () => {
 
             return () => clearTimeout(timeoutId);
         }
-    }, [parcelles, operateurs, machines, produitsDisponibles]);
+    }, [parcelles, operateurs, machines, produitsDisponibles, lotsParProduit]);
     
     // Fermer les suggestions quand on clique à l'extérieur
     useEffect(() => {
@@ -796,6 +833,15 @@ const PhytoTracker = () => {
         return () => document.removeEventListener('click', handleClickOutside);
     }, []);
 
+    // Fonction utilitaire pour parser les nombres avec virgule ou point comme séparateur décimal
+    const parseNumberFR = (value) => {
+        if (!value) return 0;
+        // Remplacer la virgule par un point pour parseFloat
+        const normalized = String(value).replace(',', '.');
+        const num = parseFloat(normalized);
+        return isNaN(num) ? 0 : num;
+    };
+
     // Calcul de l'IFT pour un produit
     const calculerIFT = (produit, doseUtilisee) => {
         if (!produit || !doseUtilisee) return 0;
@@ -803,9 +849,12 @@ const PhytoTracker = () => {
         const produitInfo = produitsDisponibles.find(p => p.nom === produit);
         if (!produitInfo || !produitInfo.doseRef) return 0;
         
-        // Extraire la valeur numérique de la dose utilisée
-        const doseNum = parseFloat(doseUtilisee);
-        if (isNaN(doseNum)) return 0;
+        // Les adjuvants ne comptent pas dans l'IFT
+        if (produitInfo.categorie === 'Adjuvant') return 0;
+        
+        // Extraire la valeur numérique de la dose utilisée (accepte virgule et point)
+        const doseNum = parseNumberFR(doseUtilisee);
+        if (doseNum === 0) return 0;
         
         // IFT = dose utilisée / dose de référence
         const ift = doseNum / produitInfo.doseRef;
@@ -829,8 +878,8 @@ const PhytoTracker = () => {
         const produitUtilises = {};
         
         parcelles.forEach(p => {
-            const surface = parseFloat(p.surface) || 0;
-            if (p.surface) surfaceTotale += surface;
+            const surface = parseNumberFR(p.surface);
+            if (surface > 0) surfaceTotale += surface;
             nbTraitementsTotal += p.traitements.length;
             
             p.traitements.forEach(t => {
@@ -1122,11 +1171,42 @@ const PhytoTracker = () => {
     };
 
     const toggleIlot = (ilotNom) => {
+        const isCurrentlyOpen = ilotsOuverts.includes(ilotNom);
+        
         setIlotsOuverts(prev => 
             prev.includes(ilotNom) 
                 ? prev.filter(i => i !== ilotNom)
                 : [...prev, ilotNom]
         );
+        
+        // Si on ferme un îlot, scroller vers le premier îlot ouvert
+        if (isCurrentlyOpen) {
+            setTimeout(() => {
+                const remainingOpen = ilotsOuverts.filter(i => i !== ilotNom);
+                
+                if (remainingOpen.length > 0) {
+                    // Trouver le premier îlot ouvert
+                    const firstOpenIlot = ilots.find(ilot => remainingOpen.includes(ilot.nom));
+                    if (firstOpenIlot) {
+                        // Chercher l'élément DOM de cet îlot
+                        const ilotElements = document.querySelectorAll('.card-glass');
+                        for (let element of ilotElements) {
+                            const header = element.querySelector('.ilot-header');
+                            if (header && header.textContent.includes(firstOpenIlot.nom)) {
+                                element.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                                break;
+                            }
+                        }
+                    }
+                } else {
+                    // Si tous les îlots sont fermés, remonter en haut de la liste des îlots
+                    const firstIlot = document.querySelector('.card-glass');
+                    if (firstIlot) {
+                        firstIlot.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                    }
+                }
+            }, 100); // Petit délai pour que l'animation de fermeture commence
+        }
     };
 
     const ajouterTraitement = (parcelleId) => {
@@ -1266,6 +1346,21 @@ const PhytoTracker = () => {
     };
 
     const modifierProduit = (parcelleId, traitementId, produitIdx, champ, valeur) => {
+        // Si on modifie le numéro de lot, le mémoriser
+        if (champ === 'numeroLot' && valeur && valeur.trim()) {
+            // Trouver le produit pour obtenir son nom
+            const parcelle = parcelles.find(p => p.id === parcelleId);
+            const traitement = parcelle?.traitements.find(t => t.id === traitementId);
+            const produit = traitement?.produits[produitIdx];
+            
+            if (produit && produit.produit) {
+                setLotsParProduit({
+                    ...lotsParProduit,
+                    [produit.produit]: valeur.trim()
+                });
+            }
+        }
+        
         setParcelles(parcelles.map(p => {
             if (p.id === parcelleId) {
                 return {
@@ -1619,6 +1714,16 @@ const PhytoTracker = () => {
                             </button>
                         </div>
                     </div>
+                    
+                    {/* Bouton pour réinitialiser la mémoire des lots */}
+                    <div className="mb-6">
+                        <button
+                            onClick={() => initialiserMemoireLots()}
+                            className="w-full bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-3 rounded-lg font-semibold flex items-center justify-center gap-2 transition-all hover:shadow-lg"
+                            title="Scanner tous les traitements et mémoriser les numéros de lots existants">
+                            <RefreshCw /> Initialiser mémoire des numéros de lots
+                        </button>
+                    </div>
 
                     {/* Recherche */}
                     <div className="relative">
@@ -1673,7 +1778,7 @@ const PhytoTracker = () => {
                         const isOpen = ilotsOuverts.includes(ilot.nom);
                         const nbTraitementsTotal = parcellesIlot.reduce((acc, p) => acc + p.traitements.length, 0);
                         const nbTraitementsMoyen = parcellesIlot.length > 0 ? Math.round(nbTraitementsTotal / parcellesIlot.length) : 0;
-                        const surfaceIlot = parcellesIlot.reduce((acc, p) => acc + (parseFloat(p.surface) || 0), 0);
+                        const surfaceIlot = parcellesIlot.reduce((acc, p) => acc + parseNumberFR(p.surface), 0);
                         
                         return (
                             <div key={ilot.nom} className="card-glass rounded-2xl shadow-xl overflow-hidden">
@@ -1915,6 +2020,12 @@ const PhytoTracker = () => {
                                                                                                                 onClick={() => {
                                                                                                                     const key = `${parcelle.id}-${traitement.id}-${pIdx}`;
                                                                                                                     modifierProduit(parcelle.id, traitement.id, pIdx, 'produit', p.nom);
+                                                                                                                    
+                                                                                                                    // Pré-remplir le numéro de lot s'il est mémorisé
+                                                                                                                    if (lotsParProduit[p.nom]) {
+                                                                                                                        modifierProduit(parcelle.id, traitement.id, pIdx, 'numeroLot', lotsParProduit[p.nom]);
+                                                                                                                    }
+                                                                                                                    
                                                                                                                     setSearchProduit({...searchProduit, [key]: p.nom});
                                                                                                                     setShowSuggestions({...showSuggestions, [key]: false});
                                                                                                                 }}
@@ -1961,11 +2072,21 @@ const PhytoTracker = () => {
                                                                                                 className="w-full px-2 py-1 border border-gray-300 rounded text-sm"/>
                                                                                         </div>
                                                                                         <div className="col-span-2 text-center">
-                                                                                            {ift > 0 && (
-                                                                                                <span className="text-xs font-bold text-green-700 bg-green-50 px-2 py-1 rounded">
-                                                                                                    IFT: {ift.toFixed(2)}
-                                                                                                </span>
-                                                                                            )}
+                                                                                            {produit.produit && produit.doseHa ? (
+                                                                                                produitInfo && produitInfo.categorie === 'Adjuvant' ? (
+                                                                                                    <span className="text-xs font-bold text-blue-600 bg-blue-50 px-2 py-1 rounded" title="Les adjuvants ne comptent pas dans l'IFT">
+                                                                                                        Adjuvant
+                                                                                                    </span>
+                                                                                                ) : ift > 0 ? (
+                                                                                                    <span className="text-xs font-bold text-green-700 bg-green-50 px-2 py-1 rounded">
+                                                                                                        IFT: {ift.toFixed(2)}
+                                                                                                    </span>
+                                                                                                ) : (
+                                                                                                    <span className="text-xs font-bold text-gray-500 bg-gray-50 px-2 py-1 rounded" title="Produit sans dose de référence ou dose invalide">
+                                                                                                        IFT: N/A
+                                                                                                    </span>
+                                                                                                )
+                                                                                            ) : null}
                                                                                         </div>
                                                                                         <div className="col-span-1 flex justify-center">
                                                                                             {traitement.produits.length > 1 && (
@@ -2002,6 +2123,15 @@ const PhytoTracker = () => {
                                                 )}
                                             </div>
                                         ))}
+                                        
+                                        {/* Bouton pour replier l'îlot depuis le bas */}
+                                        <div className="mt-6 pt-4 border-t-2 border-gray-200">
+                                            <button
+                                                onClick={() => toggleIlot(ilot.nom)}
+                                                className="w-full bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 text-white px-6 py-3 rounded-lg font-semibold flex items-center justify-center gap-2 transition-all">
+                                                <ChevronUp /> Replier {ilot.nom}
+                                            </button>
+                                        </div>
                                     </div>
                                 )}
                             </div>
