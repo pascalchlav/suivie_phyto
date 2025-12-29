@@ -272,38 +272,43 @@ const PhytoTracker = () => {
     ];
 
     // Base de données des produits avec leurs doses de référence pour le calcul de l'IFT
-    const produitsDisponibles = [
-        { nom: 'Bouillie Bordelaise', doseRef: 2000, unite: 'g/ha', categorie: 'Fongicide' },
-        { nom: 'Cuivre', doseRef: 1500, unite: 'g/ha', categorie: 'Fongicide' },
-        { nom: 'Soufre', doseRef: 5000, unite: 'g/ha', categorie: 'Fongicide' },
-        { nom: 'Mancozèbe', doseRef: 1600, unite: 'g/ha', categorie: 'Fongicide' },
-        { nom: 'Folpel', doseRef: 1200, unite: 'g/ha', categorie: 'Fongicide' },
-        { nom: 'Cymoxanil', doseRef: 150, unite: 'g/ha', categorie: 'Fongicide' },
-        { nom: 'Fénhexamide', doseRef: 500, unite: 'g/ha', categorie: 'Fongicide' },
-        { nom: 'Pyrimethanil', doseRef: 600, unite: 'g/ha', categorie: 'Fongicide' },
-        { nom: 'Switch', doseRef: 1000, unite: 'g/ha', categorie: 'Fongicide' },
-        { nom: 'Luna Privilege', doseRef: 400, unite: 'g/ha', categorie: 'Fongicide' },
-        { nom: 'Talendo', doseRef: 200, unite: 'g/ha', categorie: 'Fongicide' },
-        { nom: 'Flint Max', doseRef: 375, unite: 'g/ha', categorie: 'Fongicide' },
-        { nom: 'Systhane', doseRef: 175, unite: 'ml/ha', categorie: 'Fongicide' },
-        { nom: 'Amistar', doseRef: 400, unite: 'ml/ha', categorie: 'Fongicide' },
-        { nom: 'Quadris', doseRef: 800, unite: 'ml/ha', categorie: 'Fongicide' },
-        { nom: 'Confidor', doseRef: 200, unite: 'ml/ha', categorie: 'Insecticide' },
-        { nom: 'Closer', doseRef: 240, unite: 'ml/ha', categorie: 'Insecticide' },
-        { nom: 'Success 4', doseRef: 600, unite: 'ml/ha', categorie: 'Insecticide' },
-        { nom: 'Belt', doseRef: 150, unite: 'ml/ha', categorie: 'Insecticide' },
-        { nom: 'Movento', doseRef: 750, unite: 'ml/ha', categorie: 'Insecticide' },
-        { nom: 'Karaté Xpress', doseRef: 400, unite: 'ml/ha', categorie: 'Insecticide' },
-        { nom: 'Decis Expert', doseRef: 625, unite: 'ml/ha', categorie: 'Insecticide' },
-        { nom: 'Callisto', doseRef: 300, unite: 'ml/ha', categorie: 'Herbicide' },
-        { nom: 'Prowl 400', doseRef: 3000, unite: 'ml/ha', categorie: 'Herbicide' },
-        { nom: 'Spotlight Plus', doseRef: 2000, unite: 'ml/ha', categorie: 'Herbicide' },
-        { nom: 'Kerb Flo', doseRef: 1500, unite: 'ml/ha', categorie: 'Herbicide' },
-        { nom: 'Glyphosate', doseRef: 3000, unite: 'ml/ha', categorie: 'Herbicide' },
-        { nom: 'Basta F1', doseRef: 3000, unite: 'ml/ha', categorie: 'Herbicide' },
-        { nom: 'Roundup', doseRef: 3000, unite: 'ml/ha', categorie: 'Herbicide' },
-        { nom: 'Challenge 600', doseRef: 300, unite: 'ml/ha', categorie: 'Herbicide' }
+    const produitsParDefaut = [
+        { nom: 'Mikal', doseRef: 4, unite: 'kg/ha', categorie: 'Fongicide' },
+        { nom: 'Microthiol', doseRef: 12.5, unite: 'kg/ha', categorie: 'Fongicide' },
+        { nom: 'Kumulus', doseRef: 12.5, unite: 'kg/ha', categorie: 'Fongicide' },
+        { nom: 'Soufre', doseRef: 12.5, unite: 'kg/ha', categorie: 'Fongicide' },
+        { nom: 'Pandero gold', doseRef: 2, unite: 'kg/ha', categorie: 'Fongicide' },
+        { nom: 'Conydia', doseRef: 0.5, unite: 'L/ha', categorie: 'Fongicide' },
+        { nom: 'Mayandra black rot', doseRef: 0.4, unite: 'L/ha', categorie: 'Fongicide' },
+        { nom: 'Sufrea quick', doseRef: 12.5, unite: 'kg/ha', categorie: 'Fongicide' },
+        { nom: 'Disco', doseRef: 0.2, unite: 'L/ha', categorie: 'Fongicide' },
+        { nom: 'Natchez', doseRef: 0.125, unite: 'kg/ha', categorie: 'Fongicide' },
+        { nom: 'Pack Bria zorvec', doseRef: 1, unite: 'L/ha', categorie: 'Fongicide' },
+        { nom: 'Ampexio', doseRef: 0.5, unite: 'L/ha', categorie: 'Fongicide' },
+        { nom: 'Kusti', doseRef: 0.2, unite: 'L/ha', categorie: 'Insecticide' },
+        { nom: 'Dynali', doseRef: 0.5, unite: 'L/ha', categorie: 'Fongicide' },
+        { nom: 'Cythrine', doseRef: 0.3, unite: 'L/ha', categorie: 'Insecticide' },
+        { nom: 'Futura', doseRef: 4, unite: 'L/ha', categorie: 'Fongicide' },
+        { nom: 'Vivando', doseRef: 0.2, unite: 'L/ha', categorie: 'Fongicide' },
+        { nom: 'Deltastar', doseRef: 0.5, unite: 'L/ha', categorie: 'Insecticide' },
+        { nom: 'Mavrik', doseRef: 0.3, unite: 'L/ha', categorie: 'Insecticide' },
+        { nom: 'Majox', doseRef: 2, unite: 'kg/ha', categorie: 'Fongicide' },
+        { nom: 'Lbg', doseRef: 4, unite: 'L/ha', categorie: 'Fongicide' },
+        { nom: 'Affirm', doseRef: 1.5, unite: 'kg/ha', categorie: 'Insecticide' },
+        { nom: 'Électis bleu', doseRef: 2.8, unite: 'L/ha', categorie: 'Fongicide' },
+        { nom: 'Nordox', doseRef: 2, unite: 'kg/ha', categorie: 'Fongicide' },
+        { nom: 'Trebon citadelle', doseRef: 0.3, unite: 'L/ha', categorie: 'Insecticide' },
+        { nom: 'Mayanda oidium', doseRef: 0.5, unite: 'L/ha', categorie: 'Fongicide' },
+        { nom: 'Trebon tordeuse', doseRef: 0.4, unite: 'L/ha', categorie: 'Insecticide' },
+        { nom: 'Kerb', doseRef: 1.875, unite: 'L/ha', categorie: 'Herbicide' },
+        { nom: 'Buggy', doseRef: 6, unite: 'L/ha', categorie: 'Herbicide' },
+        { nom: 'Pledge', doseRef: 1.2, unite: 'kg/ha', categorie: 'Herbicide' },
+        { nom: 'Katana', doseRef: 0.2, unite: 'L/ha', categorie: 'Herbicide' },
+        { nom: 'Foxy', doseRef: 1, unite: 'kg/hl', categorie: 'Adjuvant' },
+        { nom: 'Djeen', doseRef: 0.15, unite: 'L/hl', categorie: 'Adjuvant' }
     ];
+
+    const [produitsDisponibles, setProduitsDisponibles] = useState(produitsParDefaut);
 
     const initParcelles = () => {
         let parcelles = [];
@@ -338,31 +343,12 @@ const PhytoTracker = () => {
 
     // Chargement des données depuis localStorage
     const loadData = () => {
-        try {
-            const saved = localStorage.getItem(`phyto_${annee}`);
-            if (saved) {
-                const data = JSON.parse(saved);
-                return {
-                    parcelles: data.parcelles || initParcelles(),
-                    operateurs: data.operateurs || ['', ''],
-                    machines: data.machines || [
-                        { nom: '', debit: '', vitesse: '' },
-                        { nom: '', debit: '', vitesse: '' },
-                        { nom: '', debit: '', vitesse: '' }
-                    ]
-                };
-            }
-        } catch (e) {
-            console.error('Erreur chargement:', e);
-        }
+        // On ne charge plus depuis localStorage, on part toujours vide
+        // Les données seront chargées uniquement depuis Google Drive
         return {
             parcelles: initParcelles(),
             operateurs: ['', ''],
-            machines: [
-                { nom: '', debit: '', vitesse: '' },
-                { nom: '', debit: '', vitesse: '' },
-                { nom: '', debit: '', vitesse: '' }
-            ]
+            machines: []
         };
     };
 
@@ -382,12 +368,6 @@ const PhytoTracker = () => {
     const [sharedFolderId, setSharedFolderId] = useState(null);
     const [modeReadOnly, setModeReadOnly] = useState(false);
     const [derniereCopie, setDerniereCopie] = useState(null);
-
-    // Sauvegarde automatique
-    useEffect(() => {
-        const data = { parcelles, operateurs, machines };
-        localStorage.setItem(`phyto_${annee}`, JSON.stringify(data));
-    }, [parcelles, operateurs, machines, annee]);
 
     // Toast notification
     const showToast = (message, type = 'success') => {
@@ -427,6 +407,73 @@ const PhytoTracker = () => {
                 { nom: '', debit: '', vitesse: '' }
             ]);
             showToast('Parcelles réinitialisées avec les nouveaux noms !');
+        }
+    };
+
+    // Gestion des produits
+    const ajouterProduitListe = () => {
+        const nom = prompt('Nom du produit :');
+        if (!nom || !nom.trim()) return;
+        
+        const doseRef = prompt('Dose de référence :');
+        if (!doseRef) return;
+        
+        const unite = prompt('Unité (kg/ha ou L/ha) :', 'L/ha');
+        if (!unite) return;
+        
+        const categorie = prompt('Catégorie (Fongicide, Insecticide, Herbicide ou Autre) :', 'Fongicide');
+        if (!categorie) return;
+        
+        const nouveauProduit = {
+            nom: nom.trim(),
+            doseRef: parseFloat(doseRef),
+            unite: unite.trim(),
+            categorie: categorie.trim()
+        };
+        
+        setProduitsDisponibles([...produitsDisponibles, nouveauProduit]);
+        showToast(`Produit "${nom}" ajouté`);
+    };
+
+    const modifierProduitListe = (index) => {
+        const produit = produitsDisponibles[index];
+        
+        const nom = prompt('Nom du produit :', produit.nom);
+        if (nom === null) return;
+        
+        const doseRef = prompt('Dose de référence :', produit.doseRef);
+        if (doseRef === null) return;
+        
+        const unite = prompt('Unité :', produit.unite);
+        if (unite === null) return;
+        
+        const categorie = prompt('Catégorie :', produit.categorie);
+        if (categorie === null) return;
+        
+        const nouveauxProduits = [...produitsDisponibles];
+        nouveauxProduits[index] = {
+            nom: nom.trim(),
+            doseRef: parseFloat(doseRef),
+            unite: unite.trim(),
+            categorie: categorie.trim()
+        };
+        
+        setProduitsDisponibles(nouveauxProduits);
+        showToast('Produit modifié');
+    };
+
+    const supprimerProduitListe = (index) => {
+        const produit = produitsDisponibles[index];
+        if (confirm(`Supprimer le produit "${produit.nom}" ?`)) {
+            setProduitsDisponibles(produitsDisponibles.filter((_, i) => i !== index));
+            showToast(`Produit "${produit.nom}" supprimé`);
+        }
+    };
+    
+    const reinitialiserProduits = () => {
+        if (confirm('⚠️ Réinitialiser la liste des produits avec les valeurs par défaut ?')) {
+            setProduitsDisponibles(produitsParDefaut);
+            showToast('Liste des produits réinitialisée');
         }
     };
 
@@ -494,7 +541,8 @@ const PhytoTracker = () => {
                         setGoogleAccessToken(response.access_token);
                         setGoogleDriveConnected(true);
                         setModeReadOnly(false);
-                        showToast('✅ Connecté à Google Drive !');
+                        setAutoSyncEnabled(true);
+                        showToast('✅ Connecté à Google Drive ! (Sync auto activée)');
                         
                         // Initialiser le dossier de manière asynchrone après la connexion
                         setTimeout(() => {
@@ -599,6 +647,7 @@ const PhytoTracker = () => {
                 if (data.parcelles) setParcelles(data.parcelles);
                 if (data.operateurs) setOperateurs(data.operateurs);
                 if (data.machines) setMachines(data.machines);
+                if (data.produits) setProduitsDisponibles(data.produits);
                 
                 showToast('📥 Données chargées depuis Google Drive');
             }
@@ -620,6 +669,7 @@ const PhytoTracker = () => {
                 parcelles, 
                 operateurs, 
                 machines,
+                produits: produitsDisponibles,
                 lastUpdate: new Date().toISOString(),
                 updatedBy: 'user' // Vous pouvez ajouter le nom de l'utilisateur ici
             };
@@ -734,7 +784,7 @@ const PhytoTracker = () => {
 
             return () => clearTimeout(timeoutId);
         }
-    }, [parcelles, operateurs, machines]);
+    }, [parcelles, operateurs, machines, produitsDisponibles]);
 
     // Calcul de l'IFT pour un produit
     const calculerIFT = (produit, doseUtilisee) => {
@@ -764,14 +814,14 @@ const PhytoTracker = () => {
     // Calculs statistiques
     const calculerStatistiques = () => {
         let surfaceTotale = 0;
-        let nbTraitements = 0;
+        let nbTraitementsTotal = 0;
         let iftPondere = 0; // Somme des IFT pondérés par surface
         const produitUtilises = {};
         
         parcelles.forEach(p => {
             const surface = parseFloat(p.surface) || 0;
             if (p.surface) surfaceTotale += surface;
-            nbTraitements += p.traitements.length;
+            nbTraitementsTotal += p.traitements.length;
             
             p.traitements.forEach(t => {
                 // Calcul IFT du traitement
@@ -799,6 +849,9 @@ const PhytoTracker = () => {
         // IFT Total = moyenne pondérée par surface
         const iftTotal = surfaceTotale > 0 ? iftPondere / surfaceTotale : 0;
         
+        // Moyenne de traitements par parcelle
+        const nbTraitements = parcelles.length > 0 ? nbTraitementsTotal / parcelles.length : 0;
+        
         return { surfaceTotale, nbTraitements, iftTotal, produitUtilises };
     };
 
@@ -821,13 +874,13 @@ const PhytoTracker = () => {
         // ========== FEUILLE 1: TRAITEMENTS DETAILLES ==========
         csv += 'REGISTRE PHYTOSANITAIRE - ANNEE ' + annee + '\n';
         csv += 'TRAITEMENTS DETAILLES PAR PARCELLE\n\n';
-        csv += 'Parcelle;Ilot;Surface (ha);N° Traitement;Date;Produit;N° Lot;Dose;Unite;IFT;Operateur;Machine;Debit;Vitesse\n';
+        csv += 'Parcelle;Ilot;Surface (ha);N° Traitement;Date;Produit;N° Lot;Dose;Unite;IFT;Operateur;Machine;Debit\n';
         
         parcelles.forEach(p => {
             if (p.traitements.length === 0) {
                 csv += escapeCSV(p.nom) + ';' + 
                        escapeCSV(p.ilot) + ';' + 
-                       escapeCSV(p.surface || '') + ';;;;;;;;;;;;\n';
+                       escapeCSV(p.surface || '') + ';;;;;;;;;;\n';
             } else {
                 p.traitements.forEach((t, tIdx) => {
                     t.produits.forEach((pr, pIdx) => {
@@ -846,8 +899,7 @@ const PhytoTracker = () => {
                                escapeCSV(ift > 0 ? ift.toFixed(3) : '') + ';' +
                                escapeCSV(pIdx === 0 ? t.operateur1 : '') + ';' +
                                escapeCSV(pIdx === 0 ? t.machine : '') + ';' +
-                               escapeCSV(pIdx === 0 ? t.debit : '') + ';' +
-                               escapeCSV(pIdx === 0 ? t.vitesse : '') + '\n';
+                               escapeCSV(pIdx === 0 ? t.debit : '') + '\n';
                     });
                 });
             }
@@ -879,7 +931,7 @@ const PhytoTracker = () => {
         csv += 'Indicateur;Valeur\n';
         csv += 'Surface totale traitee;' + stats.surfaceTotale.toFixed(2) + ' ha\n';
         csv += 'Nombre de parcelles;' + parcelles.length + '\n';
-        csv += 'Nombre de traitements;' + stats.nbTraitements + '\n';
+        csv += 'Moyenne traitements par parcelle;' + Math.round(stats.nbTraitements) + '\n';
         csv += 'IFT Total;' + stats.iftTotal.toFixed(2) + '\n';
         csv += 'IFT Moyen par hectare;' + (stats.surfaceTotale > 0 ? (stats.iftTotal / stats.surfaceTotale).toFixed(2) : '0') + '\n';
         
@@ -914,12 +966,11 @@ const PhytoTracker = () => {
         
         csv += '\n\n';
         csv += 'MACHINES UTILISEES\n\n';
-        csv += 'N°;Nom;Debit (L/min);Vitesse (km/h)\n';
+        csv += 'N°;Nom;Vitesse (km/h)\n';
         machines.forEach((m, i) => {
             if (m.nom && m.nom.trim() !== '') {
                 csv += (i + 1) + ';' +
                        escapeCSV(m.nom) + ';' +
-                       escapeCSV(m.debit) + ';' +
                        escapeCSV(m.vitesse) + '\n';
             }
         });
@@ -1077,17 +1128,42 @@ const PhytoTracker = () => {
                     traitements: [...p.traitements, {
                         id: Date.now(),
                         date: '',
+                        type: 'traitement',
                         produits: [{ produit: '', numeroLot: '', doseHa: '' }],
                         operateur1: '',
                         machine: '',
                         debit: '',
-                        vitesse: ''
+                        commentaire: ''
                     }]
                 };
             }
             return p;
         }));
         showToast('Traitement ajouté');
+        setDerniereCopie(null);
+    };
+
+    const ajouterDesherbage = (parcelleId) => {
+        if (!verifierModificationAutorisee()) return;
+        setParcelles(parcelles.map(p => {
+            if (p.id === parcelleId && p.traitements.length < 20) {
+                return {
+                    ...p,
+                    traitements: [...p.traitements, {
+                        id: Date.now(),
+                        date: '',
+                        type: 'desherbage',
+                        produits: [{ produit: '', numeroLot: '', doseHa: '' }],
+                        operateur1: '',
+                        machine: '',
+                        debit: '',
+                        commentaire: ''
+                    }]
+                };
+            }
+            return p;
+        }));
+        showToast('Désherbage ajouté');
         setDerniereCopie(null);
     };
 
@@ -1135,7 +1211,7 @@ const PhytoTracker = () => {
                 return {
                     ...p,
                     traitements: p.traitements.map(t => {
-                        if (t.id === traitementId && t.produits.length < 5) {
+                        if (t.id === traitementId) {
                             return {
                                 ...t,
                                 produits: [...t.produits, { produit: '', numeroLot: '', doseHa: '' }]
@@ -1363,6 +1439,65 @@ const PhytoTracker = () => {
                     <h1 className="header-title text-4xl md:text-5xl font-bold mb-6 text-center">
                         🍇 Registre Phytosanitaire
                     </h1>
+
+                    {/* Google Drive Sync */}
+                    <div className="bg-gradient-to-r from-blue-50 to-indigo-50 rounded-lg p-4 border border-blue-200 mb-6">
+                        <div className="flex items-center justify-between mb-3">
+                            <div className="flex items-center gap-2">
+                                {googleDriveConnected ? <Cloud className="text-blue-600" /> : <CloudOff className="text-gray-400" />}
+                                <span className="font-semibold text-gray-700">
+                                    {googleDriveConnected ? '☁️ Connecté à Google Drive' : '☁️ Google Drive (non connecté)'}
+                                </span>
+                            </div>
+                            {googleDriveConnected && (
+                                <label className="flex items-center gap-2 cursor-pointer">
+                                    <input
+                                        type="checkbox"
+                                        checked={autoSyncEnabled}
+                                        onChange={(e) => setAutoSyncEnabled(e.target.checked)}
+                                        className="w-4 h-4"/>
+                                    <span className="text-sm text-gray-600">Sync auto</span>
+                                </label>
+                            )}
+                        </div>
+                        <div className="flex gap-2">
+                            {!googleDriveConnected ? (
+                                <button
+                                    onClick={connecterGoogleDrive}
+                                    className="flex-1 bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg font-semibold flex items-center justify-center gap-2">
+                                    <Cloud /> Se connecter
+                                </button>
+                            ) : (
+                                <>
+                                    <button
+                                        onClick={sauvegarderSurDrive}
+                                        className="flex-1 bg-blue-600 hover:bg-blue-700 text-white px-3 py-2 rounded-lg font-semibold text-sm flex items-center justify-center gap-2">
+                                        <Upload size={16} /> Sauvegarder
+                                    </button>
+                                    <button
+                                        onClick={rechargerDepuisDrive}
+                                        className="flex-1 bg-green-600 hover:bg-green-700 text-white px-3 py-2 rounded-lg font-semibold text-sm flex items-center justify-center gap-2">
+                                        <Download size={16} /> Recharger
+                                    </button>
+                                    <button
+                                        onClick={deconnecterGoogleDrive}
+                                        className="bg-gray-300 hover:bg-gray-400 text-gray-700 px-3 py-2 rounded-lg font-semibold text-sm">
+                                        Déconnecter
+                                    </button>
+                                </>
+                            )}
+                        </div>
+                        {autoSyncEnabled && (
+                            <p className="text-xs text-blue-600 mt-2 italic">
+                                ⚡ Synchronisation automatique activée
+                            </p>
+                        )}
+                        {googleDriveConnected && sharedFolderId && (
+                            <p className="text-xs text-green-600 mt-2">
+                                📁 Dossier partagé : {SHARED_FOLDER_NAME}
+                            </p>
+                        )}
+                    </div>
                     
                     {/* Statistiques */}
                     <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
@@ -1371,8 +1506,8 @@ const PhytoTracker = () => {
                             <div className="text-3xl font-bold">{stats.surfaceTotale.toFixed(2)} ha</div>
                         </div>
                         <div className="stat-card">
-                            <div className="text-sm opacity-90 mb-1">Traitements</div>
-                            <div className="text-3xl font-bold">{stats.nbTraitements}</div>
+                            <div className="text-sm opacity-90 mb-1">Traitements / parcelle</div>
+                            <div className="text-3xl font-bold">{Math.round(stats.nbTraitements)}</div>
                         </div>
                         <div className="stat-card">
                             <div className="text-sm opacity-90 mb-1">IFT Total</div>
@@ -1474,65 +1609,6 @@ const PhytoTracker = () => {
                             placeholder="Rechercher une parcelle, un îlot ou un produit..."
                             className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"/>
                     </div>
-
-                    {/* Google Drive Sync */}
-                    <div className="bg-gradient-to-r from-blue-50 to-indigo-50 rounded-lg p-4 border border-blue-200">
-                        <div className="flex items-center justify-between mb-3">
-                            <div className="flex items-center gap-2">
-                                {googleDriveConnected ? <Cloud className="text-blue-600" /> : <CloudOff className="text-gray-400" />}
-                                <span className="font-semibold text-gray-700">
-                                    {googleDriveConnected ? '☁️ Connecté à Google Drive' : '☁️ Google Drive (non connecté)'}
-                                </span>
-                            </div>
-                            {googleDriveConnected && (
-                                <label className="flex items-center gap-2 cursor-pointer">
-                                    <input
-                                        type="checkbox"
-                                        checked={autoSyncEnabled}
-                                        onChange={(e) => setAutoSyncEnabled(e.target.checked)}
-                                        className="w-4 h-4"/>
-                                    <span className="text-sm text-gray-600">Sync auto</span>
-                                </label>
-                            )}
-                        </div>
-                        <div className="flex gap-2">
-                            {!googleDriveConnected ? (
-                                <button
-                                    onClick={connecterGoogleDrive}
-                                    className="flex-1 bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg font-semibold flex items-center justify-center gap-2">
-                                    <Cloud /> Se connecter
-                                </button>
-                            ) : (
-                                <>
-                                    <button
-                                        onClick={sauvegarderSurDrive}
-                                        className="flex-1 bg-blue-600 hover:bg-blue-700 text-white px-3 py-2 rounded-lg font-semibold text-sm flex items-center justify-center gap-2">
-                                        <Upload size={16} /> Sauvegarder
-                                    </button>
-                                    <button
-                                        onClick={rechargerDepuisDrive}
-                                        className="flex-1 bg-green-600 hover:bg-green-700 text-white px-3 py-2 rounded-lg font-semibold text-sm flex items-center justify-center gap-2">
-                                        <Download size={16} /> Recharger
-                                    </button>
-                                    <button
-                                        onClick={deconnecterGoogleDrive}
-                                        className="bg-gray-300 hover:bg-gray-400 text-gray-700 px-3 py-2 rounded-lg font-semibold text-sm">
-                                        Déconnecter
-                                    </button>
-                                </>
-                            )}
-                        </div>
-                        {autoSyncEnabled && (
-                            <p className="text-xs text-blue-600 mt-2 italic">
-                                ⚡ Synchronisation automatique activée
-                            </p>
-                        )}
-                        {googleDriveConnected && sharedFolderId && (
-                            <p className="text-xs text-green-600 mt-2">
-                                📁 Dossier partagé : {SHARED_FOLDER_NAME}
-                            </p>
-                        )}
-                    </div>
                 </div>
 
                 {/* Configuration des machines */}
@@ -1574,7 +1650,8 @@ const PhytoTracker = () => {
                         if (parcellesIlot.length === 0 && searchTerm) return null;
                         
                         const isOpen = ilotsOuverts.includes(ilot.nom);
-                        const nbTraitements = parcellesIlot.reduce((acc, p) => acc + p.traitements.length, 0);
+                        const nbTraitementsTotal = parcellesIlot.reduce((acc, p) => acc + p.traitements.length, 0);
+                        const nbTraitementsMoyen = parcellesIlot.length > 0 ? Math.round(nbTraitementsTotal / parcellesIlot.length) : 0;
                         const surfaceIlot = parcellesIlot.reduce((acc, p) => acc + (parseFloat(p.surface) || 0), 0);
                         
                         return (
@@ -1591,7 +1668,7 @@ const PhytoTracker = () => {
                                             {surfaceIlot.toFixed(2)} ha
                                         </span>
                                         <span className="bg-white bg-opacity-20 px-3 py-1 rounded-full text-sm">
-                                            {nbTraitements} traitements
+                                            {nbTraitementsMoyen} trait./parc.
                                         </span>
                                     </div>
                                     {isOpen ? <ChevronUp /> : <ChevronDown />}
@@ -1620,14 +1697,25 @@ const PhytoTracker = () => {
                                                             onChange={(e) => modifierParcelle(parcelle.id, 'surface', e.target.value)}
                                                             className="w-full px-3 py-2 border border-gray-300 rounded-lg"/>
                                                     </div>
-                                                    <div className="flex-shrink-0">
-                                                        <label className="block text-sm font-semibold text-gray-700 mb-1">&nbsp;</label>
-                                                        <button
-                                                            onClick={() => ajouterTraitement(parcelle.id)}
-                                                            disabled={parcelle.traitements.length >= 20}
-                                                            className="btn-primary text-white px-4 py-2 rounded-lg font-semibold flex items-center gap-2 disabled:opacity-50">
-                                                            <Plus /> Ajouter traitement
-                                                        </button>
+                                                    <div className="flex-shrink-0 flex gap-2">
+                                                        <div>
+                                                            <label className="block text-sm font-semibold text-gray-700 mb-1">&nbsp;</label>
+                                                            <button
+                                                                onClick={() => ajouterTraitement(parcelle.id)}
+                                                                disabled={parcelle.traitements.length >= 20}
+                                                                className="btn-primary text-white px-4 py-2 rounded-lg font-semibold flex items-center gap-2 disabled:opacity-50">
+                                                                <Plus /> Traitement
+                                                            </button>
+                                                        </div>
+                                                        <div>
+                                                            <label className="block text-sm font-semibold text-gray-700 mb-1">&nbsp;</label>
+                                                            <button
+                                                                onClick={() => ajouterDesherbage(parcelle.id)}
+                                                                disabled={parcelle.traitements.length >= 20}
+                                                                className="bg-orange-600 hover:bg-orange-700 text-white px-4 py-2 rounded-lg font-semibold flex items-center gap-2 disabled:opacity-50">
+                                                                <Plus /> Désherbage
+                                                            </button>
+                                                        </div>
                                                     </div>
                                                 </div>
 
@@ -1637,13 +1725,24 @@ const PhytoTracker = () => {
                                                         {parcelle.traitements.map((traitement, traitementIndex) => {
                                                             const iftTotal = calculerIFTTraitement(traitement.produits);
                                                             
+                                                            // Numérotation séparée pour traitements et désherbages
+                                                            const traitementsAvant = parcelle.traitements.slice(0, traitementIndex);
+                                                            const numeroType = traitement.type === 'desherbage'
+                                                                ? traitementsAvant.filter(t => t.type === 'desherbage').length + 1
+                                                                : traitementsAvant.filter(t => t.type !== 'desherbage').length + 1;
+                                                            
                                                             return (
                                                                 <div key={traitement.id} className="traitement-card bg-gray-50 rounded-lg p-4">
                                                                     <div className="flex items-start justify-between mb-3">
                                                                         <div className="flex items-center gap-3">
-                                                                            <div className="bg-green-600 text-white rounded-full w-8 h-8 flex items-center justify-center font-bold text-sm flex-shrink-0">
-                                                                                {traitementIndex + 1}
+                                                                            <div className={`${traitement.type === 'desherbage' ? 'bg-orange-600' : 'bg-green-600'} text-white rounded-full w-8 h-8 flex items-center justify-center font-bold text-sm flex-shrink-0`}>
+                                                                                {numeroType}
                                                                             </div>
+                                                                            {traitement.type === 'desherbage' && (
+                                                                                <span className="bg-orange-100 text-orange-700 px-2 py-1 rounded text-xs font-semibold">
+                                                                                    DÉSHERBAGE
+                                                                                </span>
+                                                                            )}
                                                                             <Calendar className="text-gray-600" />
                                                                             <input
                                                                                 type="date"
@@ -1725,38 +1824,26 @@ const PhytoTracker = () => {
                                                                         </div>
                                                                     </div>
 
-                                                                    {/* Débit et Vitesse */}
-                                                                    <div className="grid grid-cols-2 gap-2">
-                                                                        <div>
-                                                                            <label className="block text-xs font-semibold text-gray-700 mb-1">Débit (L/ha)</label>
-                                                                            <input
-                                                                                type="text"
-                                                                                value={traitement.debit || ''}
-                                                                                onChange={(e) => modifierTraitement(parcelle.id, traitement.id, 'debit', e.target.value)}
-                                                                                placeholder="Débit (L/ha)"
-                                                                                className="w-full px-2 py-1 border border-gray-300 rounded text-sm"/>
-                                                                        </div>
-                                                                        <div>
-                                                                            <label className="block text-xs font-semibold text-gray-700 mb-1">Vitesse (km/h)</label>
-                                                                            <input
-                                                                                type="text"
-                                                                                value={traitement.vitesse || ''}
-                                                                                onChange={(e) => modifierTraitement(parcelle.id, traitement.id, 'vitesse', e.target.value)}
-                                                                                placeholder="Vitesse (km/h)"
-                                                                                className="w-full px-2 py-1 border border-gray-300 rounded text-sm"/>
-                                                                        </div>
+                                                                    {/* Débit */}
+                                                                    <div>
+                                                                        <label className="block text-xs font-semibold text-gray-700 mb-1">Débit (L/ha)</label>
+                                                                        <input
+                                                                            type="text"
+                                                                            value={traitement.debit || ''}
+                                                                            onChange={(e) => modifierTraitement(parcelle.id, traitement.id, 'debit', e.target.value)}
+                                                                            placeholder="Débit (L/ha)"
+                                                                            className="w-full px-2 py-1 border border-gray-300 rounded text-sm"/>
                                                                     </div>
 
                                                                     {/* Produits */}
                                                                     <div className="bg-white p-3 rounded-lg border border-gray-200">
                                                                         <div className="flex items-center justify-between mb-2">
                                                                             <label className="text-sm font-semibold text-gray-700">
-                                                                                Produits ({traitement.produits.length}/5)
+                                                                                Produits ({traitement.produits.length})
                                                                             </label>
                                                                             <button
                                                                                 onClick={() => ajouterProduit(parcelle.id, traitement.id)}
-                                                                                disabled={traitement.produits.length >= 5}
-                                                                                className="text-sm text-green-600 hover:text-green-800 disabled:text-gray-400 font-semibold">
+                                                                                className="text-sm text-green-600 hover:text-green-800 font-semibold">
                                                                                 + Ajouter produit
                                                                             </button>
                                                                         </div>
@@ -1773,11 +1860,21 @@ const PhytoTracker = () => {
                                                                                                 onChange={(e) => modifierProduit(parcelle.id, traitement.id, pIdx, 'produit', e.target.value)}
                                                                                                 className="w-full px-2 py-1 border border-gray-300 rounded text-sm">
                                                                                                 <option value="">Sélectionner</option>
-                                                                                                {produitsDisponibles.map((p, idx) => (
-                                                                                                    <option key={idx} value={p.nom}>
-                                                                                                        {p.nom}
-                                                                                                    </option>
-                                                                                                ))}
+                                                                                                {produitsDisponibles
+                                                                                                    .filter(p => {
+                                                                                                        // Désherbage : uniquement herbicides
+                                                                                                        if (traitement.type === 'desherbage') {
+                                                                                                            return p.categorie === 'Herbicide';
+                                                                                                        }
+                                                                                                        // Traitement : tout sauf herbicides
+                                                                                                        return p.categorie !== 'Herbicide';
+                                                                                                    })
+                                                                                                    .map((p, idx) => (
+                                                                                                        <option key={idx} value={p.nom}>
+                                                                                                            {p.nom}
+                                                                                                        </option>
+                                                                                                    ))
+                                                                                                }
                                                                                             </select>
                                                                                         </div>
                                                                                         <div className="col-span-3">
@@ -1817,6 +1914,18 @@ const PhytoTracker = () => {
                                                                                 );
                                                                             })}
                                                                         </div>
+                                                                    </div>
+
+                                                                    {/* Commentaire */}
+                                                                    <div className="mt-3">
+                                                                        <label className="block text-xs font-semibold text-gray-700 mb-1">Commentaire (optionnel)</label>
+                                                                        <textarea
+                                                                            value={traitement.commentaire || ''}
+                                                                            onChange={(e) => modifierTraitement(parcelle.id, traitement.id, 'commentaire', e.target.value)}
+                                                                            placeholder="Notes, observations..."
+                                                                            rows="2"
+                                                                            className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm resize-none"
+                                                                        />
                                                                     </div>
                                                                 </div>
                                                             );
@@ -1974,9 +2083,9 @@ const PhytoTracker = () => {
             {/* Modal Gestion des produits */}
             {showGestionProduits && (
                 <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-                    <div className="bg-white rounded-2xl p-6 max-w-4xl w-full max-h-[80vh] overflow-y-auto shadow-2xl">
+                    <div className="bg-white rounded-2xl p-6 max-w-5xl w-full max-h-[80vh] overflow-y-auto shadow-2xl">
                         <div className="flex items-center justify-between mb-6">
-                            <h3 className="text-2xl font-bold text-gray-800">Gestion des produits</h3>
+                            <h3 className="text-2xl font-bold text-gray-800">Gestion des produits phytosanitaires</h3>
                             <button
                                 onClick={() => setShowGestionProduits(false)}
                                 className="text-gray-500 hover:text-gray-700 text-2xl font-bold">
@@ -1984,87 +2093,82 @@ const PhytoTracker = () => {
                             </button>
                         </div>
                         
-                        <div className="mb-4">
+                        <div className="mb-6 flex gap-3">
                             <button
-                                onClick={() => {
-                                    const nom = prompt('Nom du produit :');
-                                    if (!nom) return;
-                                    const doseRef = prompt('Dose de référence :');
-                                    if (!doseRef) return;
-                                    const unite = prompt('Unité (kg/ha, L/ha, L/hl) :');
-                                    if (!unite) return;
-                                    const categorie = prompt('Catégorie (Fongicide, Insecticide, Herbicide, Adjuvant) :');
-                                    if (!categorie) return;
-                                    
-                                    setProduitsDisponibles([...produitsDisponibles, {
-                                        nom,
-                                        doseRef: parseFloat(doseRef),
-                                        unite,
-                                        categorie
-                                    }]);
-                                    showToast('Produit ajouté');
-                                }}
+                                onClick={ajouterProduitListe}
                                 className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg font-semibold flex items-center gap-2">
-                                <Plus size={20} /> Ajouter un produit
+                                <Plus size={18} /> Ajouter un produit
+                            </button>
+                            <button
+                                onClick={reinitialiserProduits}
+                                className="bg-orange-600 hover:bg-orange-700 text-white px-4 py-2 rounded-lg font-semibold">
+                                Réinitialiser la liste
                             </button>
                         </div>
                         
-                        <div className="space-y-2">
-                            {produitsDisponibles.map((produit, idx) => (
-                                <div key={idx} className="flex items-center justify-between bg-gray-50 p-3 rounded-lg">
-                                    <div className="flex-1">
-                                        <span className="font-semibold text-gray-700">{produit.nom}</span>
-                                        <span className="ml-3 text-sm text-gray-500">
-                                            ({produit.doseRef} {produit.unite})
-                                        </span>
-                                        <span className="ml-3 text-sm text-blue-600">{produit.categorie}</span>
-                                    </div>
-                                    <div className="flex gap-2">
-                                        <button
-                                            onClick={() => {
-                                                const nouveauNom = prompt('Nouveau nom :', produit.nom);
-                                                if (!nouveauNom) return;
-                                                const nouvelleDose = prompt('Nouvelle dose référence :', produit.doseRef);
-                                                if (!nouvelleDose) return;
-                                                const nouvelleUnite = prompt('Nouvelle unité :', produit.unite);
-                                                if (!nouvelleUnite) return;
-                                                const nouvelleCategorie = prompt('Nouvelle catégorie :', produit.categorie);
-                                                if (!nouvelleCategorie) return;
-                                                
-                                                const nouveauxProduits = [...produitsDisponibles];
-                                                nouveauxProduits[idx] = {
-                                                    nom: nouveauNom,
-                                                    doseRef: parseFloat(nouvelleDose),
-                                                    unite: nouvelleUnite,
-                                                    categorie: nouvelleCategorie
-                                                };
-                                                setProduitsDisponibles(nouveauxProduits);
-                                                showToast('Produit modifié');
-                                            }}
-                                            className="text-blue-600 hover:text-blue-800 p-2"
-                                            title="Modifier">
-                                            <Edit size={18} />
-                                        </button>
-                                        <button
-                                            onClick={() => {
-                                                if (confirm(`Supprimer le produit "${produit.nom}" ?`)) {
-                                                    setProduitsDisponibles(produitsDisponibles.filter((_, i) => i !== idx));
-                                                    showToast('Produit supprimé');
-                                                }
-                                            }}
-                                            className="text-red-600 hover:text-red-800 p-2"
-                                            title="Supprimer">
-                                            <Trash2 size={18} />
-                                        </button>
+                        <div className="mb-4 text-sm text-gray-600">
+                            Total : {produitsDisponibles.length} produit(s)
+                        </div>
+                        
+                        {/* Liste des produits par catégorie */}
+                        {['Fongicide', 'Insecticide', 'Herbicide', 'Autre'].map(categorie => {
+                            const produitsCategorie = produitsDisponibles.filter(p => p.categorie === categorie);
+                            if (produitsCategorie.length === 0) return null;
+                            
+                            return (
+                                <div key={categorie} className="mb-6">
+                                    <h4 className="text-lg font-bold text-gray-700 mb-3 pb-2 border-b-2 border-gray-200">
+                                        {categorie}s ({produitsCategorie.length})
+                                    </h4>
+                                    <div className="grid grid-cols-1 gap-2">
+                                        {produitsCategorie.map((produit, idx) => {
+                                            const globalIndex = produitsDisponibles.indexOf(produit);
+                                            return (
+                                                <div key={globalIndex} className="flex items-center justify-between bg-gray-50 p-3 rounded-lg hover:bg-gray-100 transition">
+                                                    <div className="flex-1 grid grid-cols-3 gap-4">
+                                                        <div>
+                                                            <span className="font-semibold text-gray-800">{produit.nom}</span>
+                                                        </div>
+                                                        <div className="text-sm text-gray-600">
+                                                            Dose ref: <span className="font-semibold">{produit.doseRef} {produit.unite}</span>
+                                                        </div>
+                                                        <div className="text-sm text-gray-600">
+                                                            <span className={`px-2 py-1 rounded ${
+                                                                categorie === 'Fongicide' ? 'bg-blue-100 text-blue-700' :
+                                                                categorie === 'Insecticide' ? 'bg-yellow-100 text-yellow-700' :
+                                                                categorie === 'Herbicide' ? 'bg-green-100 text-green-700' :
+                                                                'bg-gray-200 text-gray-700'
+                                                            }`}>
+                                                                {produit.categorie}
+                                                            </span>
+                                                        </div>
+                                                    </div>
+                                                    <div className="flex gap-2 ml-4">
+                                                        <button
+                                                            onClick={() => modifierProduitListe(globalIndex)}
+                                                            className="text-blue-600 hover:text-blue-800 p-2"
+                                                            title="Modifier">
+                                                            <Edit size={18} />
+                                                        </button>
+                                                        <button
+                                                            onClick={() => supprimerProduitListe(globalIndex)}
+                                                            className="text-red-600 hover:text-red-800 p-2"
+                                                            title="Supprimer">
+                                                            <Trash2 size={18} />
+                                                        </button>
+                                                    </div>
+                                                </div>
+                                            );
+                                        })}
                                     </div>
                                 </div>
-                            ))}
-                        </div>
+                            );
+                        })}
                         
                         <div className="mt-6 flex justify-end">
                             <button
                                 onClick={() => setShowGestionProduits(false)}
-                                className="bg-green-600 hover:bg-green-700 text-white px-6 py-2 rounded-lg font-semibold">
+                                className="bg-purple-600 hover:bg-purple-700 text-white px-6 py-2 rounded-lg font-semibold">
                                 Fermer
                             </button>
                         </div>
