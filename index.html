@@ -402,14 +402,9 @@ const PhytoTracker = () => {
     // Réinitialiser les parcelles
     const reinitialiserParcelles = () => {
         if (confirm('⚠️ ATTENTION : Cette action va réinitialiser toutes les parcelles avec les nouveaux noms et SUPPRIMER tous les traitements enregistrés.\n\nFaites un export CSV avant si vous voulez conserver vos données.\n\nContinuer ?')) {
-            localStorage.removeItem(`phyto_${annee}`);
             setParcelles(initParcelles());
             setOperateurs(['', '']);
-            setMachines([
-                { nom: '', debit: '', vitesse: '' },
-                { nom: '', debit: '', vitesse: '' },
-                { nom: '', debit: '', vitesse: '' }
-            ]);
+            setMachines([]);
             showToast('Parcelles réinitialisées avec les nouveaux noms !');
         }
     };
