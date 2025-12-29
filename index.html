@@ -1140,7 +1140,7 @@ const PhytoTracker = () => {
             if (p.id === parcelleId && p.traitements.length < 20) {
                 return {
                     ...p,
-                    traitements: [...p.traitements, {
+                    traitements: [{
                         id: Date.now(),
                         date: '',
                         type: 'traitement',
@@ -1149,7 +1149,7 @@ const PhytoTracker = () => {
                         machine: '',
                         debit: '',
                         commentaire: ''
-                    }]
+                    }, ...p.traitements]
                 };
             }
             return p;
@@ -1164,7 +1164,7 @@ const PhytoTracker = () => {
             if (p.id === parcelleId && p.traitements.length < 20) {
                 return {
                     ...p,
-                    traitements: [...p.traitements, {
+                    traitements: [{
                         id: Date.now(),
                         date: '',
                         type: 'desherbage',
@@ -1173,7 +1173,7 @@ const PhytoTracker = () => {
                         machine: '',
                         debit: '',
                         commentaire: ''
-                    }]
+                    }, ...p.traitements]
                 };
             }
             return p;
@@ -1378,10 +1378,10 @@ const PhytoTracker = () => {
             if (parcellesSelectionnees.includes(p.id) && p.traitements.length < 20) {
                 return {
                     ...p,
-                    traitements: [...p.traitements, {
+                    traitements: [{
                         ...nouveauTraitement,
                         id: Date.now() + Math.random()
-                    }]
+                    }, ...p.traitements]
                 };
             }
             return p;
@@ -1748,11 +1748,13 @@ const PhytoTracker = () => {
                                                 {/* Liste des traitements */}
                                                 {parcelle.traitements.length > 0 ? (
                                                     <div className="space-y-4">
-                                                        {parcelle.traitements.map((traitement, traitementIndex) => {
+                                                        {[...parcelle.traitements].reverse().map((traitement, traitementIndex) => {
                                                             const iftTotal = calculerIFTTraitement(traitement.produits);
                                                             
-                                                            // Numérotation séparée pour traitements et désherbages
-                                                            const traitementsAvant = parcelle.traitements.slice(0, traitementIndex);
+                                                            // Numérotation chronologique (1 = plus ancien, en bas)
+                                                            // On compte depuis le tableau original (non inversé)
+                                                            const indexOriginal = parcelle.traitements.findIndex(t => t.id === traitement.id);
+                                                            const traitementsAvant = parcelle.traitements.slice(0, indexOriginal);
                                                             const numeroType = traitement.type === 'desherbage'
                                                                 ? traitementsAvant.filter(t => t.type === 'desherbage').length + 1
                                                                 : traitementsAvant.filter(t => t.type !== 'desherbage').length + 1;
