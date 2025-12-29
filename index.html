@@ -403,15 +403,6 @@ const PhytoTracker = () => {
     };
 
     // Réinitialiser les parcelles
-    const reinitialiserParcelles = () => {
-        if (confirm('⚠️ ATTENTION : Cette action va réinitialiser toutes les parcelles avec les nouveaux noms et SUPPRIMER tous les traitements enregistrés.\n\nFaites un export CSV avant si vous voulez conserver vos données.\n\nContinuer ?')) {
-            setParcelles(initParcelles());
-            setOperateurs(['', '']);
-            setMachines([]);
-            showToast('Parcelles réinitialisées avec les nouveaux noms !');
-        }
-    };
-
     // Gestion des produits
     const ajouterProduitListe = () => {
         const nom = prompt('Nom du produit :');
@@ -472,13 +463,6 @@ const PhytoTracker = () => {
         }
     };
     
-    const reinitialiserProduits = () => {
-        if (confirm('⚠️ Réinitialiser la liste des produits avec les valeurs par défaut ?')) {
-            setProduitsDisponibles(produitsParDefaut);
-            showToast('Liste des produits réinitialisée');
-        }
-    };
-
     // Ajouter une parcelle
     const ajouterParcelle = (ilot) => {
         const nouveauNom = prompt(`Nom de la nouvelle parcelle pour ${ilot} :`);
@@ -1668,7 +1652,7 @@ const PhytoTracker = () => {
                         </div>
                     </div>
                     
-                    <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
                         <div className="flex items-end gap-2">
                             <button
                                 onClick={exporterCSV}
@@ -1706,23 +1690,6 @@ const PhytoTracker = () => {
                                 <Settings /> Gérer les produits
                             </button>
                         </div>
-                        <div className="flex items-end">
-                            <button
-                                onClick={reinitialiserParcelles}
-                                className="w-full bg-orange-600 hover:bg-orange-700 text-white px-4 py-2 rounded-lg font-semibold flex items-center justify-center gap-2 transition-all hover:shadow-lg">
-                                <RefreshCw /> Réinitialiser
-                            </button>
-                        </div>
-                    </div>
-                    
-                    {/* Bouton pour réinitialiser la mémoire des lots */}
-                    <div className="mb-6">
-                        <button
-                            onClick={() => initialiserMemoireLots()}
-                            className="w-full bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-3 rounded-lg font-semibold flex items-center justify-center gap-2 transition-all hover:shadow-lg"
-                            title="Scanner tous les traitements et mémoriser les numéros de lots existants">
-                            <RefreshCw /> Initialiser mémoire des numéros de lots
-                        </button>
                     </div>
 
                     {/* Recherche */}
@@ -2294,11 +2261,6 @@ const PhytoTracker = () => {
                                 onClick={ajouterProduitListe}
                                 className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg font-semibold flex items-center gap-2">
                                 <Plus size={18} /> Ajouter un produit
-                            </button>
-                            <button
-                                onClick={reinitialiserProduits}
-                                className="bg-orange-600 hover:bg-orange-700 text-white px-4 py-2 rounded-lg font-semibold">
-                                Réinitialiser la liste
                             </button>
                         </div>
                         
