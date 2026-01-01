@@ -392,14 +392,28 @@ const PhytoTracker = () => {
     };
 
     // Changement d'année
-    const changerAnnee = (nouvelleAnnee) => {
+    const changerAnnee = async (nouvelleAnnee) => {
         if (!verifierModificationAutorisee()) return;
         setAnnee(nouvelleAnnee);
+        
+        // Réinitialiser l'état local
         const data = loadData();
         setParcelles(data.parcelles);
         setOperateurs(data.operateurs);
         setMachines(data.machines);
+        setLotsParProduit({});
         setDerniereCopie(null);
+        
+        // Si connecté à Google Drive, recharger les données de la nouvelle année
+        if (googleAccessToken) {
+            showToast(`📅 Année changée : ${nouvelleAnnee}. Chargement des données...`);
+            // Petit délai pour laisser l'état se mettre à jour
+            setTimeout(async () => {
+                await chargerDepuisDrive(googleAccessToken);
+            }, 100);
+        } else {
+            showToast(`📅 Année changée : ${nouvelleAnnee}`);
+        }
     };
 
     // Réinitialiser les parcelles
