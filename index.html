@@ -407,9 +407,9 @@ const PhytoTracker = () => {
         // Si connecté à Google Drive, recharger les données de la nouvelle année
         if (googleAccessToken) {
             showToast(`📅 Année changée : ${nouvelleAnnee}. Chargement des données...`);
-            // Petit délai pour laisser l'état se mettre à jour
+            // Passer directement la nouvelle année à chargerDepuisDrive
             setTimeout(async () => {
-                await chargerDepuisDrive(googleAccessToken);
+                await chargerDepuisDrive(googleAccessToken, nouvelleAnnee);
             }, 100);
         } else {
             showToast(`📅 Année changée : ${nouvelleAnnee}`);
@@ -618,10 +618,11 @@ const PhytoTracker = () => {
     };
 
     // Charger les données depuis Google Drive
-    const chargerDepuisDrive = async (token) => {
+    const chargerDepuisDrive = async (token, anneeACharger = null) => {
         try {
-            // Chercher le fichier de données de l'année en cours
-            const fileName = `Phyto_${annee}.json`;
+            // Utiliser l'année passée en paramètre ou l'année actuelle
+            const anneeUtilisee = anneeACharger !== null ? anneeACharger : annee;
+            const fileName = `Phyto_${anneeUtilisee}.json`;
             
             // SOLUTION TEMPORAIRE: Si on cherche 2025 et qu'on ne trouve rien, essayer l'ID connu
             const FILE_ID_2025 = '1hs8XfXBGXI3sN1Vx2JsHW1lPPGnMbPOK';
@@ -632,6 +633,7 @@ const PhytoTracker = () => {
                 : `name='${fileName}' and trashed=false`;
             
             console.log('🔍 Recherche fichier:', fileName);
+            console.log('📅 Année utilisée:', anneeUtilisee);
             console.log('📁 Dossier partagé ID:', sharedFolderId);
             console.log('🔎 Requête:', searchQuery);
             
@@ -660,7 +662,7 @@ const PhytoTracker = () => {
             if (searchData.files && searchData.files.length > 0) {
                 console.log('✅ Fichier trouvé:', searchData.files[0]);
                 fileId = searchData.files[0].id;
-            } else if (annee === 2025 && FILE_ID_2025) {
+            } else if (anneeUtilisee === 2025 && FILE_ID_2025) {
                 // Solution de contournement pour 2025
                 console.log('💡 Tentative de chargement avec ID direct pour 2025');
                 fileId = FILE_ID_2025;
