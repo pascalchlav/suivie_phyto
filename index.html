@@ -392,6 +392,45 @@ const PhytoTracker = () => {
     };
 
     // Changement d'année
+    // Importer un fichier JSON local
+    const importerJSON = (event) => {
+        const file = event.target.files[0];
+        if (!file) return;
+
+        const reader = new FileReader();
+        reader.onload = (e) => {
+            try {
+                const data = JSON.parse(e.target.result);
+                
+                // Charger les données
+                if (data.parcelles) setParcelles(data.parcelles);
+                if (data.operateurs) setOperateurs(data.operateurs);
+                if (data.machines) setMachines(data.machines);
+                if (data.produits) setProduitsDisponibles(data.produits);
+                if (data.lotsParProduit) setLotsParProduit(data.lotsParProduit);
+                
+                // Initialiser la mémoire des lots si nécessaire
+                if (!data.lotsParProduit && data.parcelles) {
+                    initialiserMemoireLots(data.parcelles);
+                }
+                
+                showToast('✅ Fichier JSON importé avec succès !');
+                
+                // Sauvegarder immédiatement sur Google Drive si connecté
+                if (googleAccessToken) {
+                    setTimeout(() => {
+                        sauvegarderSurDrive();
+                    }, 500);
+                }
+            } catch (error) {
+                console.error('Erreur import JSON:', error);
+                showToast('❌ Erreur lors de l\'import du fichier JSON', 'error');
+            }
+        };
+        reader.readAsText(file);
+        event.target.value = ''; // Reset input
+    };
+
     const changerAnnee = async (nouvelleAnnee) => {
         if (!verifierModificationAutorisee()) return;
         setAnnee(nouvelleAnnee);
@@ -1710,18 +1749,28 @@ const PhytoTracker = () => {
                     </div>
                     
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
-                        <div className="flex items-end gap-2">
-                            <button
-                                onClick={exporterCSV}
-                                className="btn-primary flex-1 text-white px-4 py-2 rounded-lg font-semibold flex items-center justify-center gap-2">
-                                <Download /> Export CSV
-                            </button>
-                            <label className="btn-primary flex-1 text-white px-4 py-2 rounded-lg font-semibold flex items-center justify-center gap-2 cursor-pointer">
-                                <Upload /> Import CSV
+                        <div className="flex flex-col gap-2">
+                            <div className="flex items-end gap-2">
+                                <button
+                                    onClick={exporterCSV}
+                                    className="btn-primary flex-1 text-white px-4 py-2 rounded-lg font-semibold flex items-center justify-center gap-2">
+                                    <Download /> Export CSV
+                                </button>
+                                <label className="btn-primary flex-1 text-white px-4 py-2 rounded-lg font-semibold flex items-center justify-center gap-2 cursor-pointer">
+                                    <Upload /> Import CSV
+                                    <input
+                                        type="file"
+                                        accept=".csv"
+                                        onChange={importerCSV}
+                                        className="hidden"/>
+                                </label>
+                            </div>
+                            <label className="bg-indigo-600 hover:bg-indigo-700 w-full text-white px-4 py-2 rounded-lg font-semibold flex items-center justify-center gap-2 cursor-pointer transition-all">
+                                <Upload /> Import JSON
                                 <input
                                     type="file"
-                                    accept=".csv"
-                                    onChange={importerCSV}
+                                    accept=".json"
+                                    onChange={importerJSON}
                                     className="hidden"/>
                             </label>
                         </div>
