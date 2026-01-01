@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="fr">
 <head>
@@ -624,6 +623,9 @@ const PhytoTracker = () => {
             // Chercher le fichier de données de l'année en cours
             const fileName = `Phyto_${annee}.json`;
             
+            // SOLUTION TEMPORAIRE: Si on cherche 2025 et qu'on ne trouve rien, essayer l'ID connu
+            const FILE_ID_2025 = '1hs8XfXBGXI3sN1Vx2JsHW1lPPGnMbPOK';
+            
             // Si on a le dossier partagé, chercher dedans spécifiquement
             const searchQuery = sharedFolderId 
                 ? `name='${fileName}' and '${sharedFolderId}' in parents and trashed=false`
@@ -632,6 +634,16 @@ const PhytoTracker = () => {
             console.log('🔍 Recherche fichier:', fileName);
             console.log('📁 Dossier partagé ID:', sharedFolderId);
             console.log('🔎 Requête:', searchQuery);
+            
+            // DEBUG: Lister TOUS les fichiers du dossier
+            if (sharedFolderId) {
+                const listAllResponse = await fetch(
+                    `https://www.googleapis.com/drive/v3/files?q='${sharedFolderId}' in parents and trashed=false`,
+                    { headers: { 'Authorization': `Bearer ${token}` } }
+                );
+                const allFiles = await listAllResponse.json();
+                console.log('📂 TOUS les fichiers du dossier:', allFiles.files);
+            }
             
             const searchResponse = await fetch(
                 `https://www.googleapis.com/drive/v3/files?q=${searchQuery}`,
@@ -643,11 +655,19 @@ const PhytoTracker = () => {
             const searchData = await searchResponse.json();
             console.log('📋 Résultats recherche:', searchData);
             
+            let fileId = null;
+            
             if (searchData.files && searchData.files.length > 0) {
                 console.log('✅ Fichier trouvé:', searchData.files[0]);
-                
+                fileId = searchData.files[0].id;
+            } else if (annee === 2025 && FILE_ID_2025) {
+                // Solution de contournement pour 2025
+                console.log('💡 Tentative de chargement avec ID direct pour 2025');
+                fileId = FILE_ID_2025;
+            }
+            
+            if (fileId) {
                 // Télécharger le fichier
-                const fileId = searchData.files[0].id;
                 const downloadResponse = await fetch(
                     `https://www.googleapis.com/drive/v3/files/${fileId}?alt=media`,
                     {
