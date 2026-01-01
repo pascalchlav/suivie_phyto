@@ -622,8 +622,14 @@ const PhytoTracker = () => {
         try {
             // Chercher le fichier de données de l'année en cours
             const fileName = `Phyto_${annee}.json`;
+            
+            // Si on a le dossier partagé, chercher dedans spécifiquement
+            const searchQuery = sharedFolderId 
+                ? `name='${fileName}' and '${sharedFolderId}' in parents and trashed=false`
+                : `name='${fileName}' and trashed=false`;
+            
             const searchResponse = await fetch(
-                `https://www.googleapis.com/drive/v3/files?q=name='${fileName}' and trashed=false`,
+                `https://www.googleapis.com/drive/v3/files?q=${searchQuery}`,
                 {
                     headers: { 'Authorization': `Bearer ${token}` }
                 }
@@ -656,6 +662,9 @@ const PhytoTracker = () => {
                 }
                 
                 showToast('📥 Données chargées depuis Google Drive');
+            } else {
+                // Fichier non trouvé
+                console.log(`Fichier ${fileName} non trouvé dans Google Drive`);
             }
         } catch (error) {
             console.error('Erreur chargement depuis Drive:', error);
