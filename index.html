@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="fr">
 <head>
@@ -628,6 +629,10 @@ const PhytoTracker = () => {
                 ? `name='${fileName}' and '${sharedFolderId}' in parents and trashed=false`
                 : `name='${fileName}' and trashed=false`;
             
+            console.log('🔍 Recherche fichier:', fileName);
+            console.log('📁 Dossier partagé ID:', sharedFolderId);
+            console.log('🔎 Requête:', searchQuery);
+            
             const searchResponse = await fetch(
                 `https://www.googleapis.com/drive/v3/files?q=${searchQuery}`,
                 {
@@ -636,8 +641,11 @@ const PhytoTracker = () => {
             );
             
             const searchData = await searchResponse.json();
+            console.log('📋 Résultats recherche:', searchData);
             
             if (searchData.files && searchData.files.length > 0) {
+                console.log('✅ Fichier trouvé:', searchData.files[0]);
+                
                 // Télécharger le fichier
                 const fileId = searchData.files[0].id;
                 const downloadResponse = await fetch(
@@ -648,6 +656,7 @@ const PhytoTracker = () => {
                 );
                 
                 const data = await downloadResponse.json();
+                console.log('📥 Données chargées:', data);
                 
                 // Charger les données
                 if (data.parcelles) setParcelles(data.parcelles);
@@ -664,10 +673,13 @@ const PhytoTracker = () => {
                 showToast('📥 Données chargées depuis Google Drive');
             } else {
                 // Fichier non trouvé
-                console.log(`Fichier ${fileName} non trouvé dans Google Drive`);
+                console.error('❌ Fichier non trouvé');
+                console.log('💡 Vérifiez que le fichier est bien dans le dossier partagé');
+                showToast(`⚠️ Fichier ${fileName} non trouvé`, 'warning');
             }
         } catch (error) {
-            console.error('Erreur chargement depuis Drive:', error);
+            console.error('❌ Erreur chargement depuis Drive:', error);
+            showToast('Erreur lors du chargement', 'error');
             // Pas de toast d'erreur si le fichier n'existe pas encore
         }
     };
