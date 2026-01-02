@@ -1136,29 +1136,45 @@ const PhytoTracker = () => {
         const reader = new FileReader();
         reader.onload = (e) => {
             try {
-                const csv = e.target.result;
+                let csv = e.target.result;
+                
+                // Supprimer le BOM UTF-8 si présent
+                if (csv.charCodeAt(0) === 0xFEFF) {
+                    csv = csv.substring(1);
+                }
+                
                 const lines = csv.split('\n');
                 
                 console.log('📄 Total lignes CSV:', lines.length);
-                console.log('📄 Premières lignes:', lines.slice(0, 5));
+                console.log('📄 Premières lignes:', lines.slice(0, 10));
                 
                 // Détecter le séparateur (virgule ou point-virgule)
-                const separator = lines[0].includes(';') ? ';' : ',';
+                let separator = ',';
+                for (let line of lines) {
+                    if (line.includes(';')) {
+                        separator = ';';
+                        break;
+                    }
+                }
                 console.log('🔍 Séparateur détecté:', separator);
                 
                 // Chercher la ligne d'en-tête (commence par "Parcelle")
                 let startIndex = -1;
                 for (let i = 0; i < lines.length; i++) {
-                    if (lines[i].startsWith('Parcelle' + separator) || 
-                        lines[i].includes('Parcelle' + separator + 'Ilot')) {
+                    const line = lines[i].trim();
+                    if (line.startsWith('Parcelle') && line.includes('Ilot')) {
                         startIndex = i + 1; // Ligne suivante pour commencer
-                        console.log('✅ En-tête trouvé à la ligne', i);
+                        console.log('✅ En-tête trouvé à la ligne', i, ':', line.substring(0, 50));
                         break;
                     }
                 }
                 
                 if (startIndex === -1) {
                     console.error('❌ En-tête non trouvé');
+                    console.log('Lignes commençant par P:', 
+                        lines.map((l, i) => ({ligne: i, contenu: l.substring(0, 30)}))
+                            .filter(x => x.contenu.trim().startsWith('P'))
+                    );
                     showToast('Format CSV invalide - En-tête non trouvé', 'error');
                     return;
                 }
