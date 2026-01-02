@@ -1139,22 +1139,34 @@ const PhytoTracker = () => {
                 const csv = e.target.result;
                 const lines = csv.split('\n');
                 
-                // Chercher la section des traitements détaillés
+                console.log('📄 Total lignes CSV:', lines.length);
+                console.log('📄 Premières lignes:', lines.slice(0, 5));
+                
+                // Détecter le séparateur (virgule ou point-virgule)
+                const separator = lines[0].includes(';') ? ';' : ',';
+                console.log('🔍 Séparateur détecté:', separator);
+                
+                // Chercher la ligne d'en-tête (commence par "Parcelle")
                 let startIndex = -1;
                 for (let i = 0; i < lines.length; i++) {
-                    if (lines[i].includes('TRAITEMENTS DETAILLES')) {
-                        startIndex = i + 2; // +2 pour sauter la ligne de titre
+                    if (lines[i].startsWith('Parcelle' + separator) || 
+                        lines[i].includes('Parcelle' + separator + 'Ilot')) {
+                        startIndex = i + 1; // Ligne suivante pour commencer
+                        console.log('✅ En-tête trouvé à la ligne', i);
                         break;
                     }
                 }
                 
                 if (startIndex === -1) {
-                    showToast('Format CSV invalide', 'error');
+                    console.error('❌ En-tête non trouvé');
+                    showToast('Format CSV invalide - En-tête non trouvé', 'error');
                     return;
                 }
                 
+                console.log('📍 Début analyse à la ligne', startIndex);
+                
                 // Parser les lignes de traitement
-                const parseCSVLine = (line) => {
+                const parseCSVLine = (line, sep) => {
                     const result = [];
                     let current = '';
                     let inQuotes = false;
@@ -1169,7 +1181,7 @@ const PhytoTracker = () => {
                             } else {
                                 inQuotes = !inQuotes;
                             }
-                        } else if (char === ',' && !inQuotes) {
+                        } else if (char === sep && !inQuotes) {
                             result.push(current);
                             current = '';
                         } else {
@@ -1184,17 +1196,42 @@ const PhytoTracker = () => {
                 const newParcelles = initParcelles();
                 const traitementsByParcelle = {};
                 
+                let lignesValides = 0;
+                let currentParcelle = '';
+                let currentDate = '';
+                
                 // Parcourir les lignes
                 for (let i = startIndex; i < lines.length; i++) {
                     const line = lines[i].trim();
-                    if (!line || line.startsWith('CONSOMMATION PRODUITS')) break;
+                    if (!line) continue;
                     
-                    const cols = parseCSVLine(line);
-                    if (cols.length < 12) continue;
+                    const cols = parseCSVLine(line, separator);
                     
-                    const [parcelleName, ilot, surface, date, produit, numeroLot, doseHa, dar, operateur, machine, debit, vitesse] = cols;
+                    // Si la première colonne n'est pas vide, c'est une nouvelle parcelle
+                    if (cols[0] && cols[0].trim()) {
+                        currentParcelle = cols[0].trim();
+                    }
                     
-                    if (!produit) continue;
+                    // Si la colonne date n'est pas vide, c'est un nouveau traitement
+                    if (cols[4] && cols[4].trim()) {
+                        currentDate = cols[4].trim();
+                    }
+                    
+                    // Colonnes : Parcelle;Ilot;Surface;N°Traitement;Date;Produit;N°Lot;Dose;Unite;IFT;Operateur;Machine;Debit
+                    const parcelleName = currentParcelle;
+                    const ilot = cols[1] ? cols[1].trim() : '';
+                    const surface = cols[2] ? cols[2].trim() : '';
+                    const date = currentDate;
+                    const produit = cols[5] ? cols[5].trim() : '';
+                    const numeroLot = cols[6] ? cols[6].trim() : '';
+                    const dose = cols[7] ? cols[7].trim() : '';
+                    const operateur = cols[10] ? cols[10].trim() : '';
+                    const machine = cols[11] ? cols[11].trim() : '';
+                    const debit = cols[12] ? cols[12].trim() : '';
+                    
+                    if (!produit || !parcelleName || !date) continue;
+                    
+                    lignesValides++;
                     
                     // Trouver ou créer le traitement
                     const key = `${parcelleName}-${date}`;
@@ -1208,7 +1245,6 @@ const PhytoTracker = () => {
                             operateur,
                             machine,
                             debit,
-                            vitesse,
                             produits: []
                         };
                     }
@@ -1216,32 +1252,39 @@ const PhytoTracker = () => {
                     traitementsByParcelle[key].produits.push({
                         produit,
                         numeroLot,
-                        doseHa
+                        doseHa: dose
                     });
                 }
+                
+                console.log('📊 Lignes valides analysées:', lignesValides);
+                console.log('📊 Traitements créés:', Object.keys(traitementsByParcelle).length);
+                console.log('📦 Traitements:', traitementsByParcelle);
                 
                 // Appliquer les traitements aux parcelles
                 Object.values(traitementsByParcelle).forEach(t => {
                     const parcelle = newParcelles.find(p => p.nom === t.parcelleName);
                     if (parcelle) {
-                        parcelle.surface = t.surface;
+                        if (t.surface) parcelle.surface = t.surface;
                         parcelle.traitements.push({
                             id: Date.now() + Math.random(),
                             date: t.date,
+                            type: 'traitement',
                             produits: t.produits,
                             operateur1: t.operateur,
                             machine: t.machine,
                             debit: t.debit,
-                            vitesse: t.vitesse
+                            commentaire: ''
                         });
+                    } else {
+                        console.warn('⚠️ Parcelle non trouvée:', t.parcelleName);
                     }
                 });
                 
                 setParcelles(newParcelles);
-                showToast('Import CSV réussi ! ' + Object.keys(traitementsByParcelle).length + ' traitement(s) importé(s)');
+                showToast('✅ Import CSV réussi ! ' + Object.keys(traitementsByParcelle).length + ' traitement(s) importé(s)');
                 
             } catch (error) {
-                console.error('Erreur import:', error);
+                console.error('❌ Erreur import:', error);
                 showToast('Erreur lors de l\'import CSV', 'error');
             }
         };
