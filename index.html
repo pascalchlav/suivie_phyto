@@ -1259,20 +1259,27 @@ const PhytoTracker = () => {
                             produit = lotToProduit[numeroLot];
                             console.log('✅ Produit retrouvé via lot', numeroLot, '→', produit);
                         } else {
-                            console.warn('⚠️ Ligne', i, ': Lot', numeroLot, 'non trouvé dans la mémoire → ligne ignorée');
-                            continue;
+                            // Produit non trouvé, on utilise un placeholder
+                            produit = `[Produit inconnu - Lot: ${numeroLot}]`;
+                            console.warn('⚠️ Ligne', i, ': Lot', numeroLot, 'non trouvé → ajouté comme "' + produit + '"');
                         }
                     }
                     
-                    // Une ligne est valide si elle a au moins un produit, une date et une parcelle
-                    if (!produit || !parcelleName || !date) {
+                    // Une ligne est valide si elle a au moins une dose, une date et une parcelle
+                    // Le produit peut être vide ou un placeholder
+                    if (!parcelleName || !date) {
                         continue;
                     }
                     
-                    // Si pas de dose, ignorer (ligne incomplète)
-                    if (!dose) {
-                        console.warn('⚠️ Ligne', i, ': Produit', produit, 'sans dose → ignorée');
+                    // Si pas de dose ET pas de produit, ignorer (ligne vraiment vide)
+                    if (!dose && !produit) {
                         continue;
+                    }
+                    
+                    // Si pas de produit du tout (même après recherche de lot), mettre un placeholder
+                    if (!produit) {
+                        produit = '[Produit non spécifié]';
+                        console.warn('⚠️ Ligne', i, ': Aucun produit → ajouté comme "' + produit + '"');
                     }
                     
                     lignesValides++;
