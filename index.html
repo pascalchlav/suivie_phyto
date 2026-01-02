@@ -1560,6 +1560,9 @@ const PhytoTracker = () => {
         const parcelle = parcelles.find(p => p.id === parcelleId);
         const traitement = parcelle.traitements.find(t => t.id === traitementId);
         
+        console.log('🔍 Validation copie traitement:', traitement);
+        console.log('📦 Produits:', traitement.produits);
+        
         // Validation simple : vérifier les champs obligatoires
         const champsManquants = [];
         
@@ -1583,7 +1586,9 @@ const PhytoTracker = () => {
         let aUnProduit = false;
         if (traitement.produits && traitement.produits.length > 0) {
             for (let i = 0; i < traitement.produits.length; i++) {
-                if (traitement.produits[i].produit) {
+                const nomProduit = traitement.produits[i].produit;
+                console.log('  Produit', i, ':', nomProduit, '| Type:', typeof nomProduit, '| Valide:', !!(nomProduit && nomProduit.trim()));
+                if (nomProduit && nomProduit.trim()) {
                     aUnProduit = true;
                     break;
                 }
@@ -1596,10 +1601,12 @@ const PhytoTracker = () => {
         
         if (champsManquants.length > 0) {
             const message = 'Impossible de copier : champs manquants - ' + champsManquants.join(', ');
+            console.error('❌ Validation échouée:', champsManquants);
             showToast(message, 'error');
             return;
         }
         
+        console.log('✅ Validation réussie');
         setTraitementACopier({ parcelleId, traitementId, traitement });
         setShowCopyModal(true);
         setParcellesSelectionnees([]);
