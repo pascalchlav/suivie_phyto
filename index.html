@@ -2170,6 +2170,17 @@ const PhytoTracker = () => {
                                                                                                     const key = `${parcelle.id}-${traitement.id}-${pIdx}`;
                                                                                                     setShowSuggestions({...showSuggestions, [key]: true});
                                                                                                 }}
+                                                                                                onBlur={() => {
+                                                                                                    const key = `${parcelle.id}-${traitement.id}-${pIdx}`;
+                                                                                                    // Sauvegarder la valeur tapée si elle a changé
+                                                                                                    setTimeout(() => {
+                                                                                                        const valeur = searchProduit[key];
+                                                                                                        if (valeur !== undefined && valeur !== produit.produit) {
+                                                                                                            modifierProduit(parcelle.id, traitement.id, pIdx, 'produit', valeur);
+                                                                                                        }
+                                                                                                        setShowSuggestions({...showSuggestions, [key]: false});
+                                                                                                    }, 200);
+                                                                                                }}
                                                                                                 placeholder="Rechercher un produit..."
                                                                                                 className="w-full px-2 py-1 border border-gray-300 rounded text-sm"
                                                                                             />
@@ -2192,6 +2203,13 @@ const PhytoTracker = () => {
                                                                                                                 key={idx}
                                                                                                                 onClick={() => {
                                                                                                                     const key = `${parcelle.id}-${traitement.id}-${pIdx}`;
+                                                                                                                    console.log('🖱️ Clic autocomplétion:', {
+                                                                                                                        produit: p.nom,
+                                                                                                                        parcelleId: parcelle.id,
+                                                                                                                        traitementId: traitement.id,
+                                                                                                                        produitIdx: pIdx
+                                                                                                                    });
+                                                                                                                    
                                                                                                                     modifierProduit(parcelle.id, traitement.id, pIdx, 'produit', p.nom);
                                                                                                                     
                                                                                                                     // Pré-remplir le numéro de lot s'il est mémorisé
@@ -2201,6 +2219,8 @@ const PhytoTracker = () => {
                                                                                                                     
                                                                                                                     setSearchProduit({...searchProduit, [key]: p.nom});
                                                                                                                     setShowSuggestions({...showSuggestions, [key]: false});
+                                                                                                                    
+                                                                                                                    console.log('✅ Autocomplétion terminée');
                                                                                                                 }}
                                                                                                                 className="px-3 py-2 hover:bg-green-100 cursor-pointer text-sm border-b border-gray-100"
                                                                                                             >
