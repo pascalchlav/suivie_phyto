@@ -1216,6 +1216,13 @@ const PhytoTracker = () => {
                 let currentParcelle = '';
                 let currentDate = '';
                 
+                // Créer un mapping inverse : numeroLot -> produit
+                const lotToProduit = {};
+                Object.entries(lotsParProduit).forEach(([produit, lot]) => {
+                    if (lot) lotToProduit[lot] = produit;
+                });
+                console.log('🔖 Mapping lots -> produits:', lotToProduit);
+                
                 // Parcourir les lignes
                 for (let i = startIndex; i < lines.length; i++) {
                     const line = lines[i].trim();
@@ -1238,14 +1245,35 @@ const PhytoTracker = () => {
                     const ilot = cols[1] ? cols[1].trim() : '';
                     const surface = cols[2] ? cols[2].trim() : '';
                     const date = currentDate;
-                    const produit = cols[5] ? cols[5].trim() : '';
+                    let produit = cols[5] ? cols[5].trim() : '';
                     const numeroLot = cols[6] ? cols[6].trim() : '';
                     const dose = cols[7] ? cols[7].trim() : '';
                     const operateur = cols[10] ? cols[10].trim() : '';
                     const machine = cols[11] ? cols[11].trim() : '';
                     const debit = cols[12] ? cols[12].trim() : '';
                     
-                    if (!produit || !parcelleName || !date) continue;
+                    // Si pas de nom de produit mais qu'on a un numéro de lot et une dose
+                    // → Chercher le produit dans la mémoire des lots
+                    if (!produit && numeroLot && dose) {
+                        if (lotToProduit[numeroLot]) {
+                            produit = lotToProduit[numeroLot];
+                            console.log('✅ Produit retrouvé via lot', numeroLot, '→', produit);
+                        } else {
+                            console.warn('⚠️ Ligne', i, ': Lot', numeroLot, 'non trouvé dans la mémoire → ligne ignorée');
+                            continue;
+                        }
+                    }
+                    
+                    // Une ligne est valide si elle a au moins un produit, une date et une parcelle
+                    if (!produit || !parcelleName || !date) {
+                        continue;
+                    }
+                    
+                    // Si pas de dose, ignorer (ligne incomplète)
+                    if (!dose) {
+                        console.warn('⚠️ Ligne', i, ': Produit', produit, 'sans dose → ignorée');
+                        continue;
+                    }
                     
                     lignesValides++;
                     
@@ -1598,10 +1626,9 @@ const PhytoTracker = () => {
         // Sauvegarder état avant copie
         const etatAvant = JSON.parse(JSON.stringify(parcelles));
 
-        const nouveauTraitement = {
-            ...traitementACopier.traitement,
-            id: Date.now()
-        };
+        // Deep copy du traitement pour éviter les références partagées
+        const nouveauTraitement = JSON.parse(JSON.stringify(traitementACopier.traitement));
+        nouveauTraitement.id = Date.now();
 
         const nouvellesParcelles = parcelles.map(p => {
             if (parcellesSelectionnees.includes(p.id) && p.traitements.length < 20) {
