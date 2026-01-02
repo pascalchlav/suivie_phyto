@@ -1013,13 +1013,13 @@ const PhytoTracker = () => {
         // ========== FEUILLE 1: TRAITEMENTS DETAILLES ==========
         csv += 'REGISTRE PHYTOSANITAIRE - ANNEE ' + annee + '\n';
         csv += 'TRAITEMENTS DETAILLES PAR PARCELLE\n\n';
-        csv += 'Parcelle;Ilot;Surface (ha);N° Traitement;Date;Date Fin;Produit;N° Lot;Dose;Unite;IFT;Operateur;Machine;Debit\n';
+        csv += 'Parcelle;Ilot;Surface (ha);N° Traitement;Date;Produit;N° Lot;Dose;Unite;IFT;Operateur;Machine;Debit\n';
         
         parcelles.forEach(p => {
             if (p.traitements.length === 0) {
                 csv += escapeCSV(p.nom) + ';' + 
                        escapeCSV(p.ilot) + ';' + 
-                       escapeCSV(p.surface || '') + ';;;;;;;;;;;;\n';
+                       escapeCSV(p.surface || '') + ';;;;;;;;;;\n';
             } else {
                 p.traitements.forEach((t, tIdx) => {
                     t.produits.forEach((pr, pIdx) => {
@@ -1031,7 +1031,6 @@ const PhytoTracker = () => {
                                escapeCSV(pIdx === 0 ? (p.surface || '') : '') + ';' +
                                escapeCSV(pIdx === 0 ? (tIdx + 1) : '') + ';' +
                                escapeCSV(pIdx === 0 ? t.date : '') + ';' +
-                               escapeCSV(pIdx === 0 ? (t.dateFin || '') : '') + ';' +
                                escapeCSV(pr.produit) + ';' +
                                escapeCSV(pr.numeroLot) + ';' +
                                escapeCSV(pr.doseHa) + ';' +
@@ -1216,7 +1215,6 @@ const PhytoTracker = () => {
                 let lignesValides = 0;
                 let currentParcelle = '';
                 let currentDate = '';
-                let currentDateFin = '';
                 
                 // Créer un mapping inverse : numeroLot -> produit
                 const lotToProduit = {};
@@ -1240,21 +1238,19 @@ const PhytoTracker = () => {
                     // Si la colonne date n'est pas vide, c'est un nouveau traitement
                     if (cols[4] && cols[4].trim()) {
                         currentDate = cols[4].trim();
-                        currentDateFin = cols[5] ? cols[5].trim() : ''; // Date de fin pour désherbage
                     }
                     
-                    // Colonnes : Parcelle;Ilot;Surface;N°Traitement;Date;Date Fin;Produit;N°Lot;Dose;Unite;IFT;Operateur;Machine;Debit
+                    // Colonnes : Parcelle;Ilot;Surface;N°Traitement;Date;Produit;N°Lot;Dose;Unite;IFT;Operateur;Machine;Debit
                     const parcelleName = currentParcelle;
                     const ilot = cols[1] ? cols[1].trim() : '';
                     const surface = cols[2] ? cols[2].trim() : '';
                     const date = currentDate;
-                    const dateFin = currentDateFin;
-                    let produit = cols[6] ? cols[6].trim() : '';
-                    const numeroLot = cols[7] ? cols[7].trim() : '';
-                    const dose = cols[8] ? cols[8].trim() : '';
-                    const operateur = cols[11] ? cols[11].trim() : '';
-                    const machine = cols[12] ? cols[12].trim() : '';
-                    const debit = cols[13] ? cols[13].trim() : '';
+                    let produit = cols[5] ? cols[5].trim() : '';
+                    const numeroLot = cols[6] ? cols[6].trim() : '';
+                    const dose = cols[7] ? cols[7].trim() : '';
+                    const operateur = cols[10] ? cols[10].trim() : '';
+                    const machine = cols[11] ? cols[11].trim() : '';
+                    const debit = cols[12] ? cols[12].trim() : '';
                     
                     // Si pas de nom de produit mais qu'on a un numéro de lot et une dose
                     // → Chercher le produit dans la mémoire des lots
@@ -1297,7 +1293,6 @@ const PhytoTracker = () => {
                             ilot,
                             surface,
                             date,
-                            dateFin,
                             operateur,
                             machine,
                             debit,
@@ -1324,8 +1319,7 @@ const PhytoTracker = () => {
                         parcelle.traitements.push({
                             id: Date.now() + Math.random(),
                             date: t.date,
-                            dateFin: t.dateFin || '',
-                            type: t.dateFin ? 'desherbage' : 'traitement', // Si dateFin présente = désherbage
+                            type: 'traitement',
                             produits: t.produits,
                             operateur1: t.operateur,
                             machine: t.machine,
@@ -1422,7 +1416,6 @@ const PhytoTracker = () => {
                     traitements: [...p.traitements, {
                         id: Date.now(),
                         date: '',
-                        dateFin: '', // Date de fin pour la période
                         type: 'desherbage',
                         produits: [{ produit: '', numeroLot: '', doseHa: '' }],
                         operateur1: '',
@@ -1575,11 +1568,6 @@ const PhytoTracker = () => {
         
         if (!traitement.date) {
             champsManquants.push('Date');
-        }
-        
-        // Pour les désherbages, vérifier aussi la date de fin
-        if (traitement.type === 'desherbage' && !traitement.dateFin) {
-            champsManquants.push('Date de fin');
         }
         
         if (!traitement.operateur1) {
@@ -2062,17 +2050,6 @@ const PhytoTracker = () => {
                                                                                 value={traitement.date}
                                                                                 onChange={(e) => modifierTraitement(parcelle.id, traitement.id, 'date', e.target.value)}
                                                                                 className="px-3 py-2 border border-gray-300 rounded-lg font-semibold"/>
-                                                                            
-                                                                            {traitement.type === 'desherbage' && (
-                                                                                <>
-                                                                                    <span className="text-gray-600 font-semibold">au</span>
-                                                                                    <input
-                                                                                        type="date"
-                                                                                        value={traitement.dateFin || ''}
-                                                                                        onChange={(e) => modifierTraitement(parcelle.id, traitement.id, 'dateFin', e.target.value)}
-                                                                                        className="px-3 py-2 border border-gray-300 rounded-lg font-semibold"/>
-                                                                                </>
-                                                                            )}
                                                                             
                                                                             {iftTotal > 0 && (
                                                                                 <div className="ift-badge">
