@@ -810,9 +810,26 @@ const PhytoTracker = () => {
                 console.log('🔵 ═══════════════════════════════════════════════════');
             } else {
                 // Fichier non trouvé
-                console.error('❌ Fichier non trouvé');
-                console.log('💡 Vérifiez que le fichier est bien dans le dossier partagé');
-                showToast(`⚠️ Fichier ${fileName} non trouvé`, 'warning');
+                console.log('❌ Fichier non trouvé');
+                console.log('💡 Création d\'un nouveau fichier pour cette année avec la structure actuelle');
+                
+                // ⭐ Créer un fichier pour la nouvelle année avec les parcelles/produits actuels
+                // mais sans traitements (année vierge)
+                const parcellesVierges = parcelles.map(p => ({
+                    ...p,
+                    traitements: [] // Année vierge = pas de traitements
+                }));
+                
+                setParcelles(parcellesVierges);
+                setLotsParProduit({});
+                
+                // Sauvegarder immédiatement ce fichier vierge
+                setTimeout(async () => {
+                    console.log('💾 Création du fichier vierge pour', anneeUtilisee);
+                    await sauvegarderSurDrive();
+                }, 500);
+                
+                showToast(`📅 Nouvelle année ${anneeUtilisee} créée (structure conservée, traitements vides)`);
             }
             
             // 🔓 DÉSACTIVER le flag après 3 secondes pour permettre la sauvegarde
