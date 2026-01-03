@@ -755,10 +755,6 @@ const PhytoTracker = () => {
             // 🔒 ACTIVER le flag pour empêcher la sauvegarde automatique
             setIsLoadingFromDrive(true);
             
-            console.log('🔵 ═══════════════════════════════════════════════════');
-            console.log('🔵 DÉBUT CHARGEMENT GOOGLE DRIVE');
-            console.log('🔵 ═══════════════════════════════════════════════════');
-            
             // Utiliser l'année passée en paramètre ou l'année actuelle
             const anneeUtilisee = anneeACharger !== null ? anneeACharger : annee;
             const fileName = `Phyto_${anneeUtilisee}.json`;
@@ -771,11 +767,6 @@ const PhytoTracker = () => {
                 ? `name='${fileName}' and '${sharedFolderId}' in parents and trashed=false`
                 : `name='${fileName}' and trashed=false`;
             
-            console.log('🔍 Recherche fichier:', fileName);
-            console.log('📅 Année utilisée:', anneeUtilisee);
-            console.log('📁 Dossier partagé ID:', sharedFolderId);
-            console.log('🔎 Requête:', searchQuery);
-            
             // DEBUG: Lister TOUS les fichiers du dossier
             if (sharedFolderId) {
                 const listAllResponse = await fetch(
@@ -783,7 +774,6 @@ const PhytoTracker = () => {
                     { headers: { 'Authorization': `Bearer ${token}` } }
                 );
                 const allFiles = await listAllResponse.json();
-                console.log('📂 TOUS les fichiers du dossier:', allFiles.files);
             }
             
             const searchResponse = await fetch(
@@ -820,46 +810,27 @@ const PhytoTracker = () => {
                 
                 const data = await downloadResponse.json();
                 
-                console.log('📥 Données chargées depuis Drive:');
-                console.log('  📂 Parcelles:', data.parcelles?.length || 0);
-                console.log('  👤 Opérateurs:', data.operateurs || []);
-                console.log('  🚜 Machines:', data.machines?.length || 0);
-                console.log('  🧪 Produits:', data.produits?.length || 0);
-                console.log('  🏷️ Lots mémorisés:', Object.keys(data.lotsParProduit || {}).length);
-                console.log('  📅 LastUpdate:', data.lastUpdate);
-                console.log('  ⏱️ SaveTimestamp:', data.saveTimestamp);
-                
                 // Charger les données
                 if (data.parcelles) {
-                    console.log('📦 Chargement des parcelles...');
                     setParcelles(data.parcelles);
                 }
                 if (data.operateurs) {
-                    console.log('👤 Chargement des opérateurs...');
                     setOperateurs(data.operateurs);
                 }
                 if (data.machines) {
-                    console.log('🚜 Chargement des machines...');
                     setMachines(data.machines);
                 }
                 if (data.produits) {
-                    console.log('🧪 Chargement des produits...');
                     setProduitsDisponibles(data.produits);
                 }
                 if (data.lotsParProduit) {
-                    console.log('🏷️ Chargement de la mémoire des lots...');
                     setLotsParProduit(data.lotsParProduit);
                 } else if (data.parcelles) {
-                    console.log('🏷️ Initialisation de la mémoire des lots...');
                     // Si pas de mémoire de lots sauvegardée, scanner les traitements existants
                     initialiserMemoireLots(data.parcelles);
                 }
                 
                 showToast('📥 Données chargées depuis Google Drive');
-                
-                console.log('🔵 ═══════════════════════════════════════════════════');
-                console.log('🔵 FIN CHARGEMENT GOOGLE DRIVE - SUCCÈS');
-                console.log('🔵 ═══════════════════════════════════════════════════');
             } else {
                 // Fichier non trouvé
                 console.log('❌ Fichier non trouvé');
@@ -942,9 +913,6 @@ const PhytoTracker = () => {
         }
         
         setIsSaving(true);
-        console.log('🔵 ═══════════════════════════════════════════════════');
-        console.log('🔵 DÉBUT SAUVEGARDE GOOGLE DRIVE');
-        console.log('🔵 ═══════════════════════════════════════════════════');
 
         try {
             const data = { 
@@ -958,19 +926,8 @@ const PhytoTracker = () => {
                 updatedBy: 'user'
             };
             
-            // 📊 Logs détaillés des données
-            console.log('📦 Données à sauvegarder:');
-            console.log('  📂 Parcelles:', parcelles.length);
-            console.log('  👤 Opérateurs:', operateurs);
-            console.log('  🚜 Machines:', machines.length);
-            console.log('  🧪 Produits disponibles:', produitsDisponibles.length);
-            console.log('  🏷️ Lots mémorisés:', Object.keys(lotsParProduit).length);
-            console.log('  📊 Taille totale:', JSON.stringify(data).length, 'caractères');
-            
             const jsonData = JSON.stringify(data, null, 2);
             const fileName = `Phyto_${annee}.json`;
-            
-            console.log('📝 Nom du fichier:', fileName);
             
             // Chercher si le fichier existe déjà
             const searchResponse = await fetch(
@@ -985,9 +942,6 @@ const PhytoTracker = () => {
             if (searchData.files && searchData.files.length > 0) {
                 // Mettre à jour le fichier existant
                 const fileId = searchData.files[0].id;
-                console.log('📝 MISE À JOUR fichier existant');
-                console.log('📝 FileId:', fileId);
-                console.log('📝 Nom:', searchData.files[0].name);
                 
                 const form = new FormData();
                 form.append('metadata', new Blob([JSON.stringify({ name: fileName })], { type: 'application/json' }));
@@ -1005,7 +959,6 @@ const PhytoTracker = () => {
                 );
 
                 if (response.ok) {
-                    console.log('✅ Sauvegarde réussie - Fichier mis à jour');
                     showToast('✅ Synchronisé avec Google Drive');
                     // ⭐ Réinitialiser le compteur d'échecs en cas de succès
                     setSaveFailureCount(0);
@@ -1016,7 +969,6 @@ const PhytoTracker = () => {
                 }
             } else {
                 // Créer un nouveau fichier
-                console.log('📝 CRÉATION nouveau fichier');
                 const metadata = {
                     name: fileName,
                     mimeType: 'application/json',
@@ -1040,8 +992,6 @@ const PhytoTracker = () => {
 
                 if (response.ok) {
                     const newFileData = await response.json();
-                    console.log('✅ Sauvegarde réussie - Nouveau fichier créé');
-                    console.log('📝 Nouveau FileId:', newFileData.id);
                     showToast('✅ Sauvegardé sur Google Drive');
                     // ⭐ Réinitialiser le compteur d'échecs en cas de succès
                     setSaveFailureCount(0);
@@ -1052,14 +1002,8 @@ const PhytoTracker = () => {
                 }
             }
             
-            console.log('🔵 ═══════════════════════════════════════════════════');
-            console.log('🔵 FIN SAUVEGARDE GOOGLE DRIVE - SUCCÈS');
-            console.log('🔵 ═══════════════════════════════════════════════════');
-            
         } catch (error) {
-            console.error('❌ ═══════════════════════════════════════════════════');
             console.error('❌ ERREUR SAUVEGARDE GOOGLE DRIVE:', error);
-            console.error('❌ ═══════════════════════════════════════════════════');
             
             // ⭐ Incrémenter le compteur d'échecs
             setSaveFailureCount(prev => {
@@ -1104,9 +1048,6 @@ const PhytoTracker = () => {
 
     // Nettoyer les doublons de produits dans les traitements
     const nettoyerDoublonsProduits = () => {
-        console.log('🧹 ═══════════════════════════════════════════════════');
-        console.log('🧹 DÉBUT NETTOYAGE ET RÉORGANISATION');
-        console.log('🧹 ═══════════════════════════════════════════════════');
         
         let nbDoublonsTrouves = 0;
         let nbTraitementsModifies = 0;
@@ -1189,21 +1130,12 @@ const PhytoTracker = () => {
         if (actionsEffectuees.length > 0) {
             setParcelles(parcellesNettoyees);
             console.log('📊 Résumé du nettoyage:');
-            console.log(`  🗑️ Doublons supprimés: ${nbDoublonsTrouves}`);
-            console.log(`  🔄 Reclassifications: ${nbReclassifies}`);
-            console.log(`  📅 Parcelles triées: ${nbParcellesTriees}`);
-            console.log('🧹 ═══════════════════════════════════════════════════');
-            console.log('🧹 FIN NETTOYAGE - SUCCÈS');
-            console.log('🧹 ═══════════════════════════════════════════════════');
             
             showToast(`🧹 ${actionsEffectuees.join(', ')}`);
             
             // Note: La sauvegarde automatique se déclenchera via le useEffect
             // car les parcelles ont été modifiées (délai 1 minute)
-            console.log('ℹ️ La sauvegarde automatique se déclenchera dans 1 minute');
         } else {
-            console.log('✅ Aucune action nécessaire - Données déjà propres et organisées');
-            console.log('🧹 ═══════════════════════════════════════════════════');
             showToast('✅ Données déjà propres et organisées');
         }
     };
@@ -1882,7 +1814,6 @@ const PhytoTracker = () => {
             const produit = traitement?.produits[produitIdx];
             
             if (produit && produit.produit) {
-                console.log('🏷️ Mémorisation lot:', produit.produit, '→', valeur.trim());
                 // ⭐ Utiliser la forme fonctionnelle pour avoir l'état le plus récent
                 setLotsParProduit(prevLots => ({
                     ...prevLots,
@@ -2253,36 +2184,40 @@ const PhytoTracker = () => {
                                 </label>
                             )}
                         </div>
-                        <div className="flex flex-col sm:flex-row gap-2">
+                        <div className="flex flex-col gap-2">
                             {!googleDriveConnected ? (
                                 <button
                                     onClick={connecterGoogleDrive}
-                                    className="flex-1 bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg font-semibold flex items-center justify-center gap-2">
+                                    className="w-full bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg font-semibold flex items-center justify-center gap-2">
                                     <Cloud /> Se connecter
                                 </button>
                             ) : (
                                 <>
-                                    <button
-                                        onClick={sauvegarderSurDrive}
-                                        className="flex-1 bg-blue-600 hover:bg-blue-700 text-white px-3 py-2 rounded-lg font-semibold text-sm flex items-center justify-center gap-2">
-                                        <Upload size={16} /> Sauvegarder
-                                    </button>
-                                    <button
-                                        onClick={rechargerDepuisDrive}
-                                        className="flex-1 bg-green-600 hover:bg-green-700 text-white px-3 py-2 rounded-lg font-semibold text-sm flex items-center justify-center gap-2">
-                                        <Download size={16} /> Recharger
-                                    </button>
-                                    <button
-                                        onClick={nettoyerDoublonsProduits}
-                                        className="flex-1 bg-orange-600 hover:bg-orange-700 text-white px-3 py-2 rounded-lg font-semibold text-sm flex items-center justify-center gap-2"
-                                        title="Supprime les produits en double dans les traitements">
-                                        🧹 Nettoyer
-                                    </button>
-                                    <button
-                                        onClick={deconnecterGoogleDrive}
-                                        className="bg-gray-300 hover:bg-gray-400 text-gray-700 px-3 py-2 rounded-lg font-semibold text-sm">
-                                        Déconnecter
-                                    </button>
+                                    <div className="flex gap-2">
+                                        <button
+                                            onClick={sauvegarderSurDrive}
+                                            className="flex-1 bg-blue-600 hover:bg-blue-700 text-white px-3 py-2 rounded-lg font-semibold text-sm flex items-center justify-center gap-2">
+                                            <Upload size={16} /> Sauvegarder
+                                        </button>
+                                        <button
+                                            onClick={rechargerDepuisDrive}
+                                            className="flex-1 bg-green-600 hover:bg-green-700 text-white px-3 py-2 rounded-lg font-semibold text-sm flex items-center justify-center gap-2">
+                                            <Download size={16} /> Recharger
+                                        </button>
+                                    </div>
+                                    <div className="flex gap-2">
+                                        <button
+                                            onClick={nettoyerDoublonsProduits}
+                                            className="flex-1 bg-orange-600 hover:bg-orange-700 text-white px-3 py-2 rounded-lg font-semibold text-sm flex items-center justify-center gap-2"
+                                            title="Supprime les produits en double dans les traitements">
+                                            🧹 Nettoyer
+                                        </button>
+                                        <button
+                                            onClick={deconnecterGoogleDrive}
+                                            className="flex-1 bg-gray-300 hover:bg-gray-400 text-gray-700 px-3 py-2 rounded-lg font-semibold text-sm">
+                                            Déconnecter
+                                        </button>
+                                    </div>
                                 </>
                             )}
                         </div>
@@ -2745,11 +2680,7 @@ const PhytoTracker = () => {
                                                                                                                         setLotsParProduit(currentLots => {
                                                                                                                             // Pré-remplir le numéro de lot s'il est mémorisé
                                                                                                                             if (currentLots[p.nom]) {
-                                                                                                                                console.log('🏷️ Pré-remplissage lot pour', p.nom, ':', currentLots[p.nom]);
                                                                                                                                 modifierProduit(parcelle.id, traitement.id, pIdx, 'numeroLot', currentLots[p.nom]);
-                                                                                                                            } else {
-                                                                                                                                console.log('⚠️ Pas de lot mémorisé pour', p.nom);
-                                                                                                                                console.log('📋 Lots disponibles:', Object.keys(currentLots));
                                                                                                                             }
                                                                                                                             // Retourner l'état inchangé
                                                                                                                             return currentLots;
