@@ -119,6 +119,45 @@
                 opacity: 1;
             }
         }
+        
+        /* Optimisations Mobile */
+        @media (max-width: 640px) {
+            /* Textes plus lisibles */
+            body {
+                font-size: 14px;
+            }
+            
+            /* Padding réduit sur mobile */
+            .card-glass {
+                padding: 1rem !important;
+            }
+            
+            /* Boutons plus grands pour le tactile */
+            button, select, input[type="text"], input[type="date"], input[type="number"], textarea {
+                min-height: 44px;
+                font-size: 16px; /* Évite le zoom automatique iOS */
+            }
+            
+            /* Modals plein écran sur mobile */
+            .fixed.inset-0 > div {
+                max-height: 95vh !important;
+                margin: 0.5rem !important;
+            }
+            
+            /* Espacements réduits */
+            .mb-6 {
+                margin-bottom: 1rem !important;
+            }
+            
+            .gap-4 {
+                gap: 0.75rem !important;
+            }
+            
+            /* Titre plus petit */
+            .header-title {
+                font-size: 2rem !important;
+            }
+        }
     </style>
 </head>
 <body>
@@ -2214,7 +2253,7 @@ const PhytoTracker = () => {
                                 </label>
                             )}
                         </div>
-                        <div className="flex gap-2">
+                        <div className="flex flex-col sm:flex-row gap-2">
                             {!googleDriveConnected ? (
                                 <button
                                     onClick={connecterGoogleDrive}
@@ -2312,23 +2351,21 @@ const PhytoTracker = () => {
                         </div>
                     </div>
                     
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mb-6">
                         <div className="flex flex-col gap-2">
-                            <div className="flex items-end gap-2">
-                                <button
-                                    onClick={exporterCSV}
-                                    className="btn-primary flex-1 text-white px-4 py-2 rounded-lg font-semibold flex items-center justify-center gap-2">
-                                    <Download /> Export CSV
-                                </button>
-                                <label className="btn-primary flex-1 text-white px-4 py-2 rounded-lg font-semibold flex items-center justify-center gap-2 cursor-pointer">
-                                    <Upload /> Import CSV
-                                    <input
-                                        type="file"
-                                        accept=".csv"
-                                        onChange={importerCSV}
-                                        className="hidden"/>
-                                </label>
-                            </div>
+                            <button
+                                onClick={exporterCSV}
+                                className="btn-primary w-full text-white px-4 py-2 rounded-lg font-semibold flex items-center justify-center gap-2">
+                                <Download /> Export CSV
+                            </button>
+                            <label className="btn-primary w-full text-white px-4 py-2 rounded-lg font-semibold flex items-center justify-center gap-2 cursor-pointer">
+                                <Upload /> Import CSV
+                                <input
+                                    type="file"
+                                    accept=".csv"
+                                    onChange={importerCSV}
+                                    className="hidden"/>
+                            </label>
                             <label className="bg-indigo-600 hover:bg-indigo-700 w-full text-white px-4 py-2 rounded-lg font-semibold flex items-center justify-center gap-2 cursor-pointer transition-all">
                                 <Upload /> Import JSON
                                 <input
@@ -2338,7 +2375,7 @@ const PhytoTracker = () => {
                                     className="hidden"/>
                             </label>
                         </div>
-                        <div className="flex items-end">
+                        <div className="flex items-stretch">
                             {derniereCopie ? (
                                 <button
                                     onClick={annulerDerniereCopie}
@@ -2353,7 +2390,7 @@ const PhytoTracker = () => {
                                 </button>
                             )}
                         </div>
-                        <div className="flex items-end">
+                        <div className="flex items-stretch">
                             <button
                                 onClick={() => setShowGestionProduits(true)}
                                 className="w-full bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded-lg font-semibold flex items-center justify-center gap-2 transition-all hover:shadow-lg">
@@ -2543,18 +2580,20 @@ const PhytoTracker = () => {
                                                                                 </div>
                                                                             )}
                                                                         </div>
-                                                                        <div className="flex gap-2">
+                                                                        <div className="flex flex-col sm:flex-row gap-2">
                                                                             <button
                                                                                 onClick={() => ouvrirModaleCopie(parcelle.id, traitement.id)}
-                                                                                className="text-blue-600 hover:text-blue-800 p-2"
+                                                                                className="text-blue-600 hover:text-blue-800 p-2 sm:px-3 sm:py-2 border border-blue-300 rounded hover:bg-blue-50 flex items-center justify-center gap-1"
                                                                                 title="Copier vers d'autres parcelles">
-                                                                                <Copy />
+                                                                                <Copy size={18} />
+                                                                                <span className="sm:hidden">Copier</span>
                                                                             </button>
                                                                             <button
                                                                                 onClick={() => supprimerTraitement(parcelle.id, traitement.id)}
-                                                                                className="text-red-600 hover:text-red-800 p-2"
+                                                                                className="text-red-600 hover:text-red-800 p-2 sm:px-3 sm:py-2 border border-red-300 rounded hover:bg-red-50 flex items-center justify-center gap-1"
                                                                                 title="Supprimer">
-                                                                                <Trash2 />
+                                                                                <Trash2 size={18} />
+                                                                                <span className="sm:hidden">Supprimer</span>
                                                                             </button>
                                                                         </div>
                                                                     </div>
