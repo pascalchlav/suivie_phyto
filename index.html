@@ -382,6 +382,9 @@ const PhytoTracker = () => {
     
     // Flag pour empêcher les sauvegardes simultanées (race conditions)
     const [isSaving, setIsSaving] = useState(false);
+    
+    // Compteur d'échecs de sauvegarde pour alerter l'utilisateur
+    const [saveFailureCount, setSaveFailureCount] = useState(0);
 
     // Toast notification
     const showToast = (message, type = 'success') => {
@@ -452,17 +455,29 @@ const PhytoTracker = () => {
 
     const changerAnnee = async (nouvelleAnnee) => {
         if (!verifierModificationAutorisee()) return;
+        
+        // ⭐ SAUVEGARDER l'année actuelle AVANT de changer (si connecté à Drive)
+        if (googleAccessToken && autoSyncEnabled) {
+            console.log('💾 Sauvegarde de l\'année actuelle avant changement...');
+            try {
+                await sauvegarderSurDrive();
+                console.log('✅ Année actuelle sauvegardée');
+            } catch (error) {
+                console.error('❌ Erreur sauvegarde avant changement année:', error);
+                const confirmer = confirm(
+                    '⚠️ Impossible de sauvegarder l\'année actuelle.\n\n' +
+                    'Si vous continuez, les modifications non sauvegardées seront perdues.\n\n' +
+                    'Continuer quand même ?'
+                );
+                if (!confirmer) {
+                    return; // Annuler le changement d'année
+                }
+            }
+        }
+        
         setAnnee(nouvelleAnnee);
         
-        // Réinitialiser l'état local
-        const data = loadData();
-        setParcelles(data.parcelles);
-        setOperateurs(data.operateurs);
-        setMachines(data.machines);
-        setLotsParProduit({});
-        setDerniereCopie(null);
-        
-        // Si connecté à Google Drive, recharger les données de la nouvelle année
+        // Si connecté à Google Drive, charger la nouvelle année
         if (googleAccessToken) {
             showToast(`📅 Année changée : ${nouvelleAnnee}. Chargement des données...`);
             // Passer directement la nouvelle année à chargerDepuisDrive
@@ -470,6 +485,13 @@ const PhytoTracker = () => {
                 await chargerDepuisDrive(googleAccessToken, nouvelleAnnee);
             }, 100);
         } else {
+            // Si pas connecté, réinitialiser l'état local
+            const data = loadData();
+            setParcelles(data.parcelles);
+            setOperateurs(data.operateurs);
+            setMachines(data.machines);
+            setLotsParProduit({});
+            setDerniereCopie(null);
             showToast(`📅 Année changée : ${nouvelleAnnee}`);
         }
     };
@@ -916,6 +938,8 @@ const PhytoTracker = () => {
                 if (response.ok) {
                     console.log('✅ Sauvegarde réussie - Fichier mis à jour');
                     showToast('✅ Synchronisé avec Google Drive');
+                    // ⭐ Réinitialiser le compteur d'échecs en cas de succès
+                    setSaveFailureCount(0);
                 } else {
                     const errorText = await response.text();
                     console.error('❌ Erreur réponse:', response.status, errorText);
@@ -950,6 +974,8 @@ const PhytoTracker = () => {
                     console.log('✅ Sauvegarde réussie - Nouveau fichier créé');
                     console.log('📝 Nouveau FileId:', newFileData.id);
                     showToast('✅ Sauvegardé sur Google Drive');
+                    // ⭐ Réinitialiser le compteur d'échecs en cas de succès
+                    setSaveFailureCount(0);
                 } else {
                     const errorText = await response.text();
                     console.error('❌ Erreur réponse:', response.status, errorText);
@@ -965,6 +991,21 @@ const PhytoTracker = () => {
             console.error('❌ ═══════════════════════════════════════════════════');
             console.error('❌ ERREUR SAUVEGARDE GOOGLE DRIVE:', error);
             console.error('❌ ═══════════════════════════════════════════════════');
+            
+            // ⭐ Incrémenter le compteur d'échecs
+            setSaveFailureCount(prev => {
+                const newCount = prev + 1;
+                console.warn(`⚠️ Échec de sauvegarde n°${newCount}`);
+                
+                // ⭐ Alerte critique après 3 échecs
+                if (newCount >= 3) {
+                    setModeReadOnly(true);
+                    setAutoSyncEnabled(false);
+                    showToast('🔴 ALERTE : 3 échecs de sauvegarde ! Vérifiez votre connexion et reconnectez-vous.', 'error');
+                }
+                
+                return newCount;
+            });
             
             // Détecter expiration token
             const errorMessage = error.message || '';
@@ -1985,6 +2026,26 @@ const PhytoTracker = () => {
                         {toast.type === 'success' && <CheckCircle className="text-green-600" />}
                         {toast.type === 'error' && <AlertTriangle className="text-red-600" />}
                         <span className="font-medium">{toast.message}</span>
+                    </div>
+                </div>
+            )}
+            
+            {/* Alerte échecs de sauvegarde */}
+            {saveFailureCount > 0 && saveFailureCount < 3 && !modeReadOnly && (
+                <div className="max-w-7xl mx-auto mb-4">
+                    <div className="bg-orange-500 text-white p-4 rounded-lg shadow-xl border-2 border-orange-600">
+                        <div className="flex items-center gap-3">
+                            <AlertTriangle size={28} />
+                            <div className="flex-1">
+                                <h3 className="text-lg font-bold mb-1">
+                                    ⚠️ Échec de sauvegarde ({saveFailureCount}/3)
+                                </h3>
+                                <p className="text-sm">
+                                    La dernière sauvegarde a échoué. Vérifiez votre connexion internet.
+                                    {saveFailureCount === 2 && " Un échec de plus et le mode lecture seule sera activé !"}
+                                </p>
+                            </div>
+                        </div>
                     </div>
                 </div>
             )}
