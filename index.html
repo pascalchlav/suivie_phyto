@@ -1813,10 +1813,12 @@ const PhytoTracker = () => {
             const produit = traitement?.produits[produitIdx];
             
             if (produit && produit.produit) {
-                setLotsParProduit({
-                    ...lotsParProduit,
+                console.log('🏷️ Mémorisation lot:', produit.produit, '→', valeur.trim());
+                // ⭐ Utiliser la forme fonctionnelle pour avoir l'état le plus récent
+                setLotsParProduit(prevLots => ({
+                    ...prevLots,
                     [produit.produit]: valeur.trim()
-                });
+                }));
             }
         }
         
@@ -2564,10 +2566,21 @@ const PhytoTracker = () => {
                                                                                                                     
                                                                                                                     modifierProduit(parcelle.id, traitement.id, pIdx, 'produit', p.nom);
                                                                                                                     
-                                                                                                                    // Pré-remplir le numéro de lot s'il est mémorisé
-                                                                                                                    if (lotsParProduit[p.nom]) {
-                                                                                                                        modifierProduit(parcelle.id, traitement.id, pIdx, 'numeroLot', lotsParProduit[p.nom]);
-                                                                                                                    }
+                                                                                                                    // ⭐ Utiliser setTimeout pour que React mette à jour l'état avant de lire lotsParProduit
+                                                                                                                    setTimeout(() => {
+                                                                                                                        setLotsParProduit(currentLots => {
+                                                                                                                            // Pré-remplir le numéro de lot s'il est mémorisé
+                                                                                                                            if (currentLots[p.nom]) {
+                                                                                                                                console.log('🏷️ Pré-remplissage lot pour', p.nom, ':', currentLots[p.nom]);
+                                                                                                                                modifierProduit(parcelle.id, traitement.id, pIdx, 'numeroLot', currentLots[p.nom]);
+                                                                                                                            } else {
+                                                                                                                                console.log('⚠️ Pas de lot mémorisé pour', p.nom);
+                                                                                                                                console.log('📋 Lots disponibles:', Object.keys(currentLots));
+                                                                                                                            }
+                                                                                                                            // Retourner l'état inchangé
+                                                                                                                            return currentLots;
+                                                                                                                        });
+                                                                                                                    }, 0);
                                                                                                                     
                                                                                                                     setSearchProduit({...searchProduit, [key]: p.nom});
                                                                                                                     setShowSuggestions({...showSuggestions, [key]: false});
