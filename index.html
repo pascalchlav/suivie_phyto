@@ -305,8 +305,8 @@ const PhytoTracker = () => {
         { nom: 'Buggy', doseRef: 6, unite: 'L/ha', categorie: 'Herbicide' },
         { nom: 'Pledge', doseRef: 1.2, unite: 'kg/ha', categorie: 'Herbicide' },
         { nom: 'Katana', doseRef: 0.2, unite: 'L/ha', categorie: 'Herbicide' },
-        { nom: 'Foxy', doseRef: 1, unite: 'kg/hl', categorie: 'Adjuvant' },
-        { nom: 'Djeen', doseRef: 0.15, unite: 'L/hl', categorie: 'Adjuvant' }
+        { nom: 'FOXY', doseRef: 1.7, unite: 'L/hl', categorie: 'Adjuvant' },
+        { nom: 'DJEEN', doseRef: 1.5, unite: 'L/hl', categorie: 'Adjuvant' }
     ];
 
     const [produitsDisponibles, setProduitsDisponibles] = useState(produitsParDefaut);
@@ -483,7 +483,7 @@ const PhytoTracker = () => {
         const doseRef = prompt('Dose de référence :');
         if (!doseRef) return;
         
-        const unite = prompt('Unité (kg/ha ou L/ha) :', 'L/ha');
+        const unite = prompt('Unité (kg/ha, L/ha ou L/hl) :', 'L/ha');
         if (!unite) return;
         
         const categorie = prompt('Catégorie (Fongicide, Insecticide, Herbicide ou Autre) :', 'Fongicide');
@@ -2431,6 +2431,9 @@ const PhytoTracker = () => {
                                                                                                 <div className="absolute z-10 w-full bg-white border border-gray-300 rounded-b shadow-lg max-h-48 overflow-y-auto">
                                                                                                     {produitsDisponibles
                                                                                                         .filter(p => {
+                                                                                                            // Les adjuvants sont toujours disponibles
+                                                                                                            if (p.categorie === 'Adjuvant') return true;
+                                                                                                            
                                                                                                             // Filtrer selon type traitement/désherbage
                                                                                                             if (traitement.type === 'desherbage') {
                                                                                                                 if (p.categorie !== 'Herbicide') return false;
@@ -2475,6 +2478,9 @@ const PhytoTracker = () => {
                                                                                                         ))
                                                                                                     }
                                                                                                     {produitsDisponibles.filter(p => {
+                                                                                                        // Les adjuvants sont toujours disponibles
+                                                                                                        if (p.categorie === 'Adjuvant') return true;
+                                                                                                        
                                                                                                         if (traitement.type === 'desherbage') {
                                                                                                             if (p.categorie !== 'Herbicide') return false;
                                                                                                         } else {
