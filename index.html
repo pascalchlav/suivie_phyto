@@ -1088,13 +1088,9 @@ const PhytoTracker = () => {
             
             showToast(`🧹 ${actionsEffectuees.join(', ')}`);
             
-            // Sauvegarder automatiquement après nettoyage
-            if (googleAccessToken && autoSyncEnabled) {
-                setTimeout(() => {
-                    console.log('💾 Sauvegarde automatique après nettoyage...');
-                    sauvegarderSurDrive();
-                }, 1000);
-            }
+            // Note: La sauvegarde automatique se déclenchera via le useEffect
+            // car les parcelles ont été modifiées (délai 1 minute)
+            console.log('ℹ️ La sauvegarde automatique se déclenchera dans 1 minute');
         } else {
             console.log('✅ Aucune action nécessaire - Données déjà propres et organisées');
             console.log('🧹 ═══════════════════════════════════════════════════');
@@ -1106,12 +1102,18 @@ const PhytoTracker = () => {
     useEffect(() => {
         if (autoSyncEnabled && googleDriveConnected && sharedFolderId) {
             const interval = setInterval(() => {
-                sauvegarderSurDrive();
+                // Vérifier les flags avant de sauvegarder
+                if (!isLoadingFromDrive && !isSaving) {
+                    console.log('💾 Sauvegarde périodique (toutes les 5 minutes)');
+                    sauvegarderSurDrive();
+                } else {
+                    console.log('⏸️ Sauvegarde périodique ignorée - opération en cours');
+                }
             }, 5 * 60 * 1000); // 5 minutes
 
             return () => clearInterval(interval);
         }
-    }, [autoSyncEnabled, googleDriveConnected, sharedFolderId, parcelles, operateurs, machines]);
+    }, [autoSyncEnabled, googleDriveConnected, sharedFolderId]); // ⭐ Retiré: parcelles, operateurs, machines
 
     // Sauvegarder automatiquement à chaque modification si auto-sync est activé
     useEffect(() => {
@@ -1129,8 +1131,13 @@ const PhytoTracker = () => {
         
         if (autoSyncEnabled && googleDriveConnected && sharedFolderId) {
             const timeoutId = setTimeout(() => {
-                console.log('💾 Sauvegarde automatique déclenchée (délai 1 minute écoulé)');
-                sauvegarderSurDrive();
+                // Vérifier à nouveau les flags au moment de la sauvegarde
+                if (!isLoadingFromDrive && !isSaving) {
+                    console.log('💾 Sauvegarde automatique déclenchée (délai 1 minute écoulé)');
+                    sauvegarderSurDrive();
+                } else {
+                    console.log('⏸️ Sauvegarde automatique annulée - opération en cours');
+                }
             }, 60000); // ⭐ 1 minute après la dernière modification
 
             return () => clearTimeout(timeoutId);
@@ -1248,15 +1255,16 @@ const PhytoTracker = () => {
         // ========== FEUILLE 1: TRAITEMENTS DETAILLES ==========
         csv += 'REGISTRE PHYTOSANITAIRE - ANNEE ' + annee + '\n';
         csv += 'TRAITEMENTS DETAILLES PAR PARCELLE\n\n';
-        csv += 'Parcelle;Ilot;Surface (ha);N° Traitement;Date;Produit;N° Lot;Dose;Unite;IFT;Operateur;Machine;Debit\n';
+        csv += 'Parcelle;Ilot;Surface (ha);Type;N° Traitement;Date;Produit;N° Lot;Dose;Unite;IFT;Operateur;Machine;Debit\n';
         
         parcelles.forEach(p => {
             if (p.traitements.length === 0) {
                 csv += escapeCSV(p.nom) + ';' + 
                        escapeCSV(p.ilot) + ';' + 
-                       escapeCSV(p.surface || '') + ';;;;;;;;;;\n';
+                       escapeCSV(p.surface || '') + ';;;;;;;;;;;;\n';
             } else {
                 p.traitements.forEach((t, tIdx) => {
+                    const typeTexte = t.type === 'desherbage' ? 'Désherbage' : 'Traitement';
                     t.produits.forEach((pr, pIdx) => {
                         const produitInfo = produitsDisponibles.find(pd => pd.nom === pr.produit);
                         const ift = calculerIFT(pr.produit, pr.doseHa);
@@ -1264,6 +1272,7 @@ const PhytoTracker = () => {
                         csv += escapeCSV(pIdx === 0 ? p.nom : '') + ';' +
                                escapeCSV(pIdx === 0 ? p.ilot : '') + ';' +
                                escapeCSV(pIdx === 0 ? (p.surface || '') : '') + ';' +
+                               escapeCSV(pIdx === 0 ? typeTexte : '') + ';' +
                                escapeCSV(pIdx === 0 ? (tIdx + 1) : '') + ';' +
                                escapeCSV(pIdx === 0 ? t.date : '') + ';' +
                                escapeCSV(pr.produit) + ';' +
