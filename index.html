@@ -376,6 +376,12 @@ const PhytoTracker = () => {
     
     // Mémoire des numéros de lots par produit
     const [lotsParProduit, setLotsParProduit] = useState({});
+    
+    // Flag pour empêcher la sauvegarde automatique pendant/après le chargement
+    const [isLoadingFromDrive, setIsLoadingFromDrive] = useState(false);
+    
+    // Flag pour empêcher les sauvegardes simultanées (race conditions)
+    const [isSaving, setIsSaving] = useState(false);
 
     // Toast notification
     const showToast = (message, type = 'success') => {
@@ -401,6 +407,9 @@ const PhytoTracker = () => {
         const reader = new FileReader();
         reader.onload = (e) => {
             try {
+                // 🔒 ACTIVER le flag pour empêcher la sauvegarde automatique
+                setIsLoadingFromDrive(true);
+                
                 const data = JSON.parse(e.target.result);
                 
                 // Charger les données
@@ -418,13 +427,22 @@ const PhytoTracker = () => {
                 showToast('✅ Fichier JSON importé avec succès !');
                 
                 // Sauvegarder immédiatement sur Google Drive si connecté
+                // MAIS seulement après avoir désactivé le flag
                 if (googleAccessToken) {
                     setTimeout(() => {
+                        setIsLoadingFromDrive(false);
                         sauvegarderSurDrive();
+                        console.log('💾 Sauvegarde post-import JSON effectuée');
+                    }, 500);
+                } else {
+                    // Si pas connecté, désactiver le flag quand même
+                    setTimeout(() => {
+                        setIsLoadingFromDrive(false);
                     }, 500);
                 }
             } catch (error) {
                 console.error('Erreur import JSON:', error);
+                setIsLoadingFromDrive(false); // Désactiver même en cas d'erreur
                 showToast('❌ Erreur lors de l\'import du fichier JSON', 'error');
             }
         };
@@ -660,6 +678,13 @@ const PhytoTracker = () => {
     // Charger les données depuis Google Drive
     const chargerDepuisDrive = async (token, anneeACharger = null) => {
         try {
+            // 🔒 ACTIVER le flag pour empêcher la sauvegarde automatique
+            setIsLoadingFromDrive(true);
+            
+            console.log('🔵 ═══════════════════════════════════════════════════');
+            console.log('🔵 DÉBUT CHARGEMENT GOOGLE DRIVE');
+            console.log('🔵 ═══════════════════════════════════════════════════');
+            
             // Utiliser l'année passée en paramètre ou l'année actuelle
             const anneeUtilisee = anneeACharger !== null ? anneeACharger : annee;
             const fileName = `Phyto_${anneeUtilisee}.json`;
@@ -702,6 +727,8 @@ const PhytoTracker = () => {
             if (searchData.files && searchData.files.length > 0) {
                 console.log('✅ Fichier trouvé:', searchData.files[0]);
                 fileId = searchData.files[0].id;
+                console.log('📂 CHARGEMENT depuis FileId:', fileId);
+                console.log('📂 Nom du fichier:', searchData.files[0].name);
             } else if (anneeUtilisee === 2025 && FILE_ID_2025) {
                 // Solution de contournement pour 2025
                 console.log('💡 Tentative de chargement avec ID direct pour 2025');
@@ -718,30 +745,67 @@ const PhytoTracker = () => {
                 );
                 
                 const data = await downloadResponse.json();
-                console.log('📥 Données chargées:', data);
+                
+                console.log('📥 Données chargées depuis Drive:');
+                console.log('  📂 Parcelles:', data.parcelles?.length || 0);
+                console.log('  👤 Opérateurs:', data.operateurs || []);
+                console.log('  🚜 Machines:', data.machines?.length || 0);
+                console.log('  🧪 Produits:', data.produits?.length || 0);
+                console.log('  🏷️ Lots mémorisés:', Object.keys(data.lotsParProduit || {}).length);
+                console.log('  📅 LastUpdate:', data.lastUpdate);
+                console.log('  ⏱️ SaveTimestamp:', data.saveTimestamp);
                 
                 // Charger les données
-                if (data.parcelles) setParcelles(data.parcelles);
-                if (data.operateurs) setOperateurs(data.operateurs);
-                if (data.machines) setMachines(data.machines);
-                if (data.produits) setProduitsDisponibles(data.produits);
+                if (data.parcelles) {
+                    console.log('📦 Chargement des parcelles...');
+                    setParcelles(data.parcelles);
+                }
+                if (data.operateurs) {
+                    console.log('👤 Chargement des opérateurs...');
+                    setOperateurs(data.operateurs);
+                }
+                if (data.machines) {
+                    console.log('🚜 Chargement des machines...');
+                    setMachines(data.machines);
+                }
+                if (data.produits) {
+                    console.log('🧪 Chargement des produits...');
+                    setProduitsDisponibles(data.produits);
+                }
                 if (data.lotsParProduit) {
+                    console.log('🏷️ Chargement de la mémoire des lots...');
                     setLotsParProduit(data.lotsParProduit);
                 } else if (data.parcelles) {
+                    console.log('🏷️ Initialisation de la mémoire des lots...');
                     // Si pas de mémoire de lots sauvegardée, scanner les traitements existants
                     initialiserMemoireLots(data.parcelles);
                 }
                 
                 showToast('📥 Données chargées depuis Google Drive');
+                
+                console.log('🔵 ═══════════════════════════════════════════════════');
+                console.log('🔵 FIN CHARGEMENT GOOGLE DRIVE - SUCCÈS');
+                console.log('🔵 ═══════════════════════════════════════════════════');
             } else {
                 // Fichier non trouvé
                 console.error('❌ Fichier non trouvé');
                 console.log('💡 Vérifiez que le fichier est bien dans le dossier partagé');
                 showToast(`⚠️ Fichier ${fileName} non trouvé`, 'warning');
             }
+            
+            // 🔓 DÉSACTIVER le flag après 3 secondes pour permettre la sauvegarde
+            setTimeout(() => {
+                setIsLoadingFromDrive(false);
+                console.log('🔓 Flag isLoadingFromDrive désactivé - sauvegarde auto réactivée');
+            }, 3000);
+            
         } catch (error) {
-            console.error('❌ Erreur chargement depuis Drive:', error);
+            console.error('❌ ═══════════════════════════════════════════════════');
+            console.error('❌ ERREUR CHARGEMENT GOOGLE DRIVE:', error);
+            console.error('❌ ═══════════════════════════════════════════════════');
             showToast('Erreur lors du chargement', 'error');
+            // Désactiver le flag même en cas d'erreur
+            setIsLoadingFromDrive(false);
             // Pas de toast d'erreur si le fichier n'existe pas encore
         }
     };
@@ -779,6 +843,17 @@ const PhytoTracker = () => {
             showToast('Connectez-vous d\'abord à Google Drive', 'error');
             return;
         }
+        
+        // 🔒 Empêcher les sauvegardes simultanées
+        if (isSaving) {
+            console.log('⏸️ Sauvegarde déjà en cours, ignorée pour éviter race condition');
+            return;
+        }
+        
+        setIsSaving(true);
+        console.log('🔵 ═══════════════════════════════════════════════════');
+        console.log('🔵 DÉBUT SAUVEGARDE GOOGLE DRIVE');
+        console.log('🔵 ═══════════════════════════════════════════════════');
 
         try {
             const data = { 
@@ -788,10 +863,23 @@ const PhytoTracker = () => {
                 produits: produitsDisponibles,
                 lotsParProduit,
                 lastUpdate: new Date().toISOString(),
-                updatedBy: 'user' // Vous pouvez ajouter le nom de l'utilisateur ici
+                saveTimestamp: Date.now(), // ⭐ Timestamp pour vérification
+                updatedBy: 'user'
             };
+            
+            // 📊 Logs détaillés des données
+            console.log('📦 Données à sauvegarder:');
+            console.log('  📂 Parcelles:', parcelles.length);
+            console.log('  👤 Opérateurs:', operateurs);
+            console.log('  🚜 Machines:', machines.length);
+            console.log('  🧪 Produits disponibles:', produitsDisponibles.length);
+            console.log('  🏷️ Lots mémorisés:', Object.keys(lotsParProduit).length);
+            console.log('  📊 Taille totale:', JSON.stringify(data).length, 'caractères');
+            
             const jsonData = JSON.stringify(data, null, 2);
             const fileName = `Phyto_${annee}.json`;
+            
+            console.log('📝 Nom du fichier:', fileName);
             
             // Chercher si le fichier existe déjà
             const searchResponse = await fetch(
@@ -806,6 +894,9 @@ const PhytoTracker = () => {
             if (searchData.files && searchData.files.length > 0) {
                 // Mettre à jour le fichier existant
                 const fileId = searchData.files[0].id;
+                console.log('📝 MISE À JOUR fichier existant');
+                console.log('📝 FileId:', fileId);
+                console.log('📝 Nom:', searchData.files[0].name);
                 
                 const form = new FormData();
                 form.append('metadata', new Blob([JSON.stringify({ name: fileName })], { type: 'application/json' }));
@@ -823,12 +914,16 @@ const PhytoTracker = () => {
                 );
 
                 if (response.ok) {
+                    console.log('✅ Sauvegarde réussie - Fichier mis à jour');
                     showToast('✅ Synchronisé avec Google Drive');
                 } else {
+                    const errorText = await response.text();
+                    console.error('❌ Erreur réponse:', response.status, errorText);
                     throw new Error('Erreur de mise à jour');
                 }
             } else {
                 // Créer un nouveau fichier
+                console.log('📝 CRÉATION nouveau fichier');
                 const metadata = {
                     name: fileName,
                     mimeType: 'application/json',
@@ -851,13 +946,25 @@ const PhytoTracker = () => {
                 );
 
                 if (response.ok) {
+                    const newFileData = await response.json();
+                    console.log('✅ Sauvegarde réussie - Nouveau fichier créé');
+                    console.log('📝 Nouveau FileId:', newFileData.id);
                     showToast('✅ Sauvegardé sur Google Drive');
                 } else {
+                    const errorText = await response.text();
+                    console.error('❌ Erreur réponse:', response.status, errorText);
                     throw new Error('Erreur de sauvegarde');
                 }
             }
+            
+            console.log('🔵 ═══════════════════════════════════════════════════');
+            console.log('🔵 FIN SAUVEGARDE GOOGLE DRIVE - SUCCÈS');
+            console.log('🔵 ═══════════════════════════════════════════════════');
+            
         } catch (error) {
-            console.error('Erreur Google Drive:', error);
+            console.error('❌ ═══════════════════════════════════════════════════');
+            console.error('❌ ERREUR SAUVEGARDE GOOGLE DRIVE:', error);
+            console.error('❌ ═══════════════════════════════════════════════════');
             
             // Détecter expiration token
             const errorMessage = error.message || '';
@@ -868,6 +975,11 @@ const PhytoTracker = () => {
             } else {
                 showToast('❌ Erreur lors de la sauvegarde', 'error');
             }
+        } finally {
+            // 🔓 Libérer le flag de sauvegarde
+            setIsSaving(false);
+            console.log('🔓 Flag isSaving libéré');
+        }
         }
     };
 
@@ -879,6 +991,80 @@ const PhytoTracker = () => {
         }
         
         await chargerDepuisDrive(googleAccessToken);
+    };
+
+    // Nettoyer les doublons de produits dans les traitements
+    const nettoyerDoublonsProduits = () => {
+        console.log('🧹 ═══════════════════════════════════════════════════');
+        console.log('🧹 DÉBUT NETTOYAGE DES DOUBLONS');
+        console.log('🧹 ═══════════════════════════════════════════════════');
+        
+        let nbDoublonsTrouves = 0;
+        let nbTraitementsModifies = 0;
+        const detailsDoublons = [];
+        
+        const parcellesNettoyees = parcelles.map(parcelle => ({
+            ...parcelle,
+            traitements: parcelle.traitements.map(traitement => {
+                const produitsUniques = [];
+                const vus = new Set();
+                let doublonsDansCeTraitement = 0;
+                
+                traitement.produits.forEach(produit => {
+                    // Créer une clé unique : nom + lot + dose
+                    const cle = `${produit.produit}|${produit.numeroLot}|${produit.doseHa}`;
+                    
+                    if (!vus.has(cle)) {
+                        vus.add(cle);
+                        produitsUniques.push(produit);
+                    } else {
+                        nbDoublonsTrouves++;
+                        doublonsDansCeTraitement++;
+                        console.log(`  🗑️ Doublon supprimé: ${produit.produit} (lot: ${produit.numeroLot}, dose: ${produit.doseHa})`);
+                        detailsDoublons.push({
+                            parcelle: parcelle.nom,
+                            ilot: parcelle.ilot,
+                            produit: produit.produit,
+                            date: traitement.date
+                        });
+                    }
+                });
+                
+                if (doublonsDansCeTraitement > 0) {
+                    nbTraitementsModifies++;
+                    console.log(`  📋 Traitement du ${traitement.date} dans ${parcelle.nom}: ${doublonsDansCeTraitement} doublon(s) supprimé(s)`);
+                }
+                
+                return {
+                    ...traitement,
+                    produits: produitsUniques
+                };
+            })
+        }));
+        
+        if (nbDoublonsTrouves > 0) {
+            setParcelles(parcellesNettoyees);
+            console.log('📊 Résumé du nettoyage:');
+            console.log(`  🗑️ Total doublons supprimés: ${nbDoublonsTrouves}`);
+            console.log(`  📋 Traitements modifiés: ${nbTraitementsModifies}`);
+            console.log('🧹 ═══════════════════════════════════════════════════');
+            console.log('🧹 FIN NETTOYAGE - SUCCÈS');
+            console.log('🧹 ═══════════════════════════════════════════════════');
+            
+            showToast(`🧹 ${nbDoublonsTrouves} doublon(s) de produits supprimés dans ${nbTraitementsModifies} traitement(s)`);
+            
+            // Sauvegarder automatiquement après nettoyage
+            if (googleAccessToken && autoSyncEnabled) {
+                setTimeout(() => {
+                    console.log('💾 Sauvegarde automatique après nettoyage...');
+                    sauvegarderSurDrive();
+                }, 1000);
+            }
+        } else {
+            console.log('✅ Aucun doublon trouvé - Données déjà propres');
+            console.log('🧹 ═══════════════════════════════════════════════════');
+            showToast('✅ Aucun doublon de produit trouvé');
+        }
     };
 
     // Auto-sync toutes les 5 minutes
@@ -894,14 +1080,27 @@ const PhytoTracker = () => {
 
     // Sauvegarder automatiquement à chaque modification si auto-sync est activé
     useEffect(() => {
+        // 🔒 NE PAS sauvegarder si on est en train de charger depuis Drive
+        if (isLoadingFromDrive) {
+            console.log('⏸️ Sauvegarde auto suspendue - chargement en cours');
+            return;
+        }
+        
+        // 🔒 NE PAS sauvegarder si une sauvegarde est déjà en cours
+        if (isSaving) {
+            console.log('⏸️ Sauvegarde auto suspendue - sauvegarde en cours');
+            return;
+        }
+        
         if (autoSyncEnabled && googleDriveConnected && sharedFolderId) {
             const timeoutId = setTimeout(() => {
+                console.log('💾 Sauvegarde automatique déclenchée (délai 5s écoulé)');
                 sauvegarderSurDrive();
-            }, 2000); // Attend 2 secondes après la dernière modification
+            }, 5000); // ⭐ AUGMENTÉ: 2s → 5s pour éviter sauvegardes trop fréquentes
 
             return () => clearTimeout(timeoutId);
         }
-    }, [parcelles, operateurs, machines, produitsDisponibles, lotsParProduit]);
+    }, [parcelles, operateurs, machines, produitsDisponibles, lotsParProduit, isLoadingFromDrive, isSaving]);
     
     // Fermer les suggestions quand on clique à l'extérieur
     useEffect(() => {
@@ -1638,15 +1837,47 @@ const PhytoTracker = () => {
     const copierTraitement = () => {
         if (!traitementACopier || parcellesSelectionnees.length === 0) return;
 
+        console.log('📋 ═══════════════════════════════════════════════════');
+        console.log('📋 DÉBUT COPIE TRAITEMENT');
+        console.log('📋 ═══════════════════════════════════════════════════');
+        
         // Sauvegarder état avant copie
         const etatAvant = JSON.parse(JSON.stringify(parcelles));
 
+        console.log('📋 Traitement ORIGINAL à copier:');
+        console.log('  📅 Date:', traitementACopier.traitement.date);
+        console.log('  🏷️ Type:', traitementACopier.traitement.type);
+        console.log('  👤 Opérateur1:', traitementACopier.traitement.operateur1);
+        console.log('  🚜 Machine:', traitementACopier.traitement.machine);
+        console.log('  💧 Débit:', traitementACopier.traitement.debit);
+        console.log('  💬 Commentaire:', traitementACopier.traitement.commentaire);
+        console.log('  🧪 Produits:', traitementACopier.traitement.produits);
+        
         // Deep copy du traitement pour éviter les références partagées
         const nouveauTraitement = JSON.parse(JSON.stringify(traitementACopier.traitement));
         nouveauTraitement.id = Date.now();
 
+        console.log('📋 Traitement COPIÉ (après deep copy):');
+        console.log('  📅 Date:', nouveauTraitement.date);
+        console.log('  🏷️ Type:', nouveauTraitement.type);
+        console.log('  👤 Opérateur1:', nouveauTraitement.operateur1);
+        console.log('  🚜 Machine:', nouveauTraitement.machine);
+        console.log('  💧 Débit:', nouveauTraitement.debit);
+        console.log('  💬 Commentaire:', nouveauTraitement.commentaire);
+        console.log('  🧪 Produits:', nouveauTraitement.produits);
+        console.log('  🆔 Nouvel ID:', nouveauTraitement.id);
+        
+        // Vérification des champs critiques
+        if (!nouveauTraitement.operateur1) {
+            console.warn('⚠️ ATTENTION: operateur1 est vide dans la copie !');
+        }
+        if (!nouveauTraitement.debit) {
+            console.warn('⚠️ ATTENTION: debit est vide dans la copie !');
+        }
+
         const nouvellesParcelles = parcelles.map(p => {
             if (parcellesSelectionnees.includes(p.id) && p.traitements.length < 20) {
+                console.log('  ➕ Ajout copie à parcelle:', p.nom, '(ilot:', p.ilot + ')');
                 return {
                     ...p,
                     traitements: [...p.traitements, {
@@ -1668,6 +1899,12 @@ const PhytoTracker = () => {
 
         const typeTexte = traitementACopier.traitement.type === 'desherbage' ? 'Désherbage' : 'Traitement';
         showToast(`${typeTexte} copié vers ${parcellesSelectionnees.length} parcelle(s)`);
+        
+        console.log('📋 ═══════════════════════════════════════════════════');
+        console.log('📋 FIN COPIE TRAITEMENT - SUCCÈS');
+        console.log('📋 Nombre de parcelles:', parcellesSelectionnees.length);
+        console.log('📋 ═══════════════════════════════════════════════════');
+        
         setShowCopyModal(false);
         setTraitementACopier(null);
         setParcellesSelectionnees([]);
@@ -1764,7 +2001,6 @@ const PhytoTracker = () => {
                                     className="flex-1 bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg font-semibold flex items-center justify-center gap-2">
                                     <Cloud /> Se connecter
                                 </button>
-                            ) : (
                                 <>
                                     <button
                                         onClick={sauvegarderSurDrive}
@@ -1775,6 +2011,12 @@ const PhytoTracker = () => {
                                         onClick={rechargerDepuisDrive}
                                         className="flex-1 bg-green-600 hover:bg-green-700 text-white px-3 py-2 rounded-lg font-semibold text-sm flex items-center justify-center gap-2">
                                         <Download size={16} /> Recharger
+                                    </button>
+                                    <button
+                                        onClick={nettoyerDoublonsProduits}
+                                        className="flex-1 bg-orange-600 hover:bg-orange-700 text-white px-3 py-2 rounded-lg font-semibold text-sm flex items-center justify-center gap-2"
+                                        title="Supprime les produits en double dans les traitements">
+                                        🧹 Nettoyer
                                     </button>
                                     <button
                                         onClick={deconnecterGoogleDrive}
