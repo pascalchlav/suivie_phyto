@@ -1129,9 +1129,9 @@ const PhytoTracker = () => {
         
         if (autoSyncEnabled && googleDriveConnected && sharedFolderId) {
             const timeoutId = setTimeout(() => {
-                console.log('💾 Sauvegarde automatique déclenchée (délai 5s écoulé)');
+                console.log('💾 Sauvegarde automatique déclenchée (délai 1 minute écoulé)');
                 sauvegarderSurDrive();
-            }, 5000); // ⭐ AUGMENTÉ: 2s → 5s pour éviter sauvegardes trop fréquentes
+            }, 60000); // ⭐ 1 minute après la dernière modification
 
             return () => clearTimeout(timeoutId);
         }
@@ -2780,7 +2780,7 @@ const PhytoTracker = () => {
                         </div>
                         
                         {/* Liste des produits par catégorie */}
-                        {['Fongicide', 'Insecticide', 'Herbicide', 'Autre'].map(categorie => {
+                        {['Fongicide', 'Insecticide', 'Herbicide', 'Adjuvant', 'Autre'].map(categorie => {
                             const produitsCategorie = produitsDisponibles.filter(p => p.categorie === categorie);
                             if (produitsCategorie.length === 0) return null;
                             
@@ -2806,6 +2806,7 @@ const PhytoTracker = () => {
                                                                 categorie === 'Fongicide' ? 'bg-blue-100 text-blue-700' :
                                                                 categorie === 'Insecticide' ? 'bg-yellow-100 text-yellow-700' :
                                                                 categorie === 'Herbicide' ? 'bg-green-100 text-green-700' :
+                                                                categorie === 'Adjuvant' ? 'bg-purple-100 text-purple-700' :
                                                                 'bg-gray-200 text-gray-700'
                                                             }`}>
                                                                 {produit.categorie}
