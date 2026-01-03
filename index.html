@@ -995,16 +995,17 @@ const PhytoTracker = () => {
     // Nettoyer les doublons de produits dans les traitements
     const nettoyerDoublonsProduits = () => {
         console.log('🧹 ═══════════════════════════════════════════════════');
-        console.log('🧹 DÉBUT NETTOYAGE DES DOUBLONS');
+        console.log('🧹 DÉBUT NETTOYAGE ET RÉORGANISATION');
         console.log('🧹 ═══════════════════════════════════════════════════');
         
         let nbDoublonsTrouves = 0;
         let nbTraitementsModifies = 0;
-        const detailsDoublons = [];
+        let nbReclassifies = 0;
+        let nbParcellesTriees = 0;
         
-        const parcellesNettoyees = parcelles.map(parcelle => ({
-            ...parcelle,
-            traitements: parcelle.traitements.map(traitement => {
+        const parcellesNettoyees = parcelles.map(parcelle => {
+            // Étape 1 : Nettoyer les doublons dans chaque traitement
+            let traitements = parcelle.traitements.map(traitement => {
                 const produitsUniques = [];
                 const vus = new Set();
                 let doublonsDansCeTraitement = 0;
@@ -1020,12 +1021,6 @@ const PhytoTracker = () => {
                         nbDoublonsTrouves++;
                         doublonsDansCeTraitement++;
                         console.log(`  🗑️ Doublon supprimé: ${produit.produit} (lot: ${produit.numeroLot}, dose: ${produit.doseHa})`);
-                        detailsDoublons.push({
-                            parcelle: parcelle.nom,
-                            ilot: parcelle.ilot,
-                            produit: produit.produit,
-                            date: traitement.date
-                        });
                     }
                 });
                 
@@ -1038,19 +1033,60 @@ const PhytoTracker = () => {
                     ...traitement,
                     produits: produitsUniques
                 };
-            })
-        }));
+            });
+            
+            // Étape 2 : Reclassifier les traitements contenant des herbicides
+            traitements = traitements.map(traitement => {
+                const aDesHerbicides = traitement.produits.some(p => {
+                    const produitInfo = produitsDisponibles.find(pd => pd.nom === p.produit);
+                    return produitInfo && produitInfo.categorie === 'Herbicide';
+                });
+                
+                if (aDesHerbicides && traitement.type !== 'desherbage') {
+                    nbReclassifies++;
+                    console.log(`  🔄 Reclassification: Traitement → Désherbage (${traitement.date} dans ${parcelle.nom})`);
+                    return { ...traitement, type: 'desherbage' };
+                }
+                return traitement;
+            });
+            
+            // Étape 3 : Trier chronologiquement (plus ancien en premier)
+            const traitementsTries = [...traitements].sort((a, b) => {
+                const dateA = new Date(a.date);
+                const dateB = new Date(b.date);
+                return dateA - dateB;
+            });
+            
+            // Vérifier si l'ordre a changé
+            const ordreChange = traitements.some((t, idx) => t.id !== traitementsTries[idx].id);
+            if (ordreChange && traitements.length > 0) {
+                nbParcellesTriees++;
+                console.log(`  📅 Tri chronologique: ${parcelle.nom} (${traitements.length} traitement(s))`);
+            }
+            
+            return {
+                ...parcelle,
+                traitements: traitementsTries
+            };
+        });
         
-        if (nbDoublonsTrouves > 0) {
+        // Résumé et sauvegarde
+        const actionsEffectuees = [];
+        if (nbDoublonsTrouves > 0) actionsEffectuees.push(`${nbDoublonsTrouves} doublon(s) supprimé(s)`);
+        if (nbReclassifies > 0) actionsEffectuees.push(`${nbReclassifies} reclassification(s)`);
+        if (nbParcellesTriees > 0) actionsEffectuees.push(`${nbParcellesTriees} parcelle(s) triée(s)`);
+        
+        if (actionsEffectuees.length > 0) {
             setParcelles(parcellesNettoyees);
             console.log('📊 Résumé du nettoyage:');
-            console.log(`  🗑️ Total doublons supprimés: ${nbDoublonsTrouves}`);
-            console.log(`  📋 Traitements modifiés: ${nbTraitementsModifies}`);
+            console.log(`  🗑️ Doublons supprimés: ${nbDoublonsTrouves}`);
+            console.log(`  🔄 Reclassifications: ${nbReclassifies}`);
+            console.log(`  📅 Parcelles triées: ${nbParcellesTriees}`);
             console.log('🧹 ═══════════════════════════════════════════════════');
             console.log('🧹 FIN NETTOYAGE - SUCCÈS');
             console.log('🧹 ═══════════════════════════════════════════════════');
             
-            showToast(`🧹 ${nbDoublonsTrouves} doublon(s) de produits supprimés dans ${nbTraitementsModifies} traitement(s)`);
+            showToast(`🧹 ${actionsEffectuees.join(', ')}`);
             
             // Sauvegarder automatiquement après nettoyage
             if (googleAccessToken && autoSyncEnabled) {
@@ -1060,9 +1096,9 @@ const PhytoTracker = () => {
                 }, 1000);
             }
         } else {
-            console.log('✅ Aucun doublon trouvé - Données déjà propres');
+            console.log('✅ Aucune action nécessaire - Données déjà propres et organisées');
             console.log('🧹 ═══════════════════════════════════════════════════');
-            showToast('✅ Aucun doublon de produit trouvé');
+            showToast('✅ Données déjà propres et organisées');
         }
     };
 
