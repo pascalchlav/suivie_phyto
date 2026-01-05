@@ -836,8 +836,8 @@ const PhytoTracker = () => {
                 console.log('❌ Fichier non trouvé');
                 console.log('💡 Création d\'un nouveau fichier pour cette année avec la structure actuelle');
                 
-                // ⭐ Créer un fichier pour la nouvelle année avec les parcelles/produits actuels
-                // mais sans traitements (année vierge)
+                // ⭐ Créer un fichier pour la nouvelle année avec la structure actuelle
+                // Vider uniquement les traitements (année vierge)
                 const parcellesVierges = parcelles.map(p => ({
                     ...p,
                     traitements: [] // Année vierge = pas de traitements
@@ -845,14 +845,15 @@ const PhytoTracker = () => {
                 
                 setParcelles(parcellesVierges);
                 setLotsParProduit({});
+                // Les machines, opérateurs et produits restent inchangés (déjà en mémoire)
                 
-                // Sauvegarder immédiatement ce fichier vierge
+                // Sauvegarder immédiatement ce fichier vierge avec la structure actuelle
                 setTimeout(async () => {
                     console.log('💾 Création du fichier vierge pour', anneeUtilisee);
                     await sauvegarderSurDrive();
                 }, 500);
                 
-                showToast(`📅 Nouvelle année ${anneeUtilisee} créée (structure conservée, traitements vides)`);
+                showToast(`📅 Nouvelle année ${anneeUtilisee} créée (parcelles/produits/machines conservés, traitements vides)`);
             }
             
             // 🔓 DÉSACTIVER le flag après 3 secondes pour permettre la sauvegarde
