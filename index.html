@@ -566,7 +566,7 @@ const PhytoTracker = () => {
         const unite = prompt('Unité (kg/ha, L/ha ou L/hl) :', 'L/ha');
         if (!unite) return;
         
-        const categorie = prompt('Catégorie (Fongicide, Insecticide, Herbicide ou Autre) :', 'Fongicide');
+        const categorie = prompt('Catégorie (Fongicide, Insecticide, Herbicide, Adjuvant ou Autre) :', 'Fongicide');
         if (!categorie) return;
         
         const nouveauProduit = {
@@ -578,6 +578,14 @@ const PhytoTracker = () => {
         
         setProduitsDisponibles([...produitsDisponibles, nouveauProduit]);
         showToast(`Produit "${nom}" ajouté`);
+        
+        // ⭐ Sauvegarde immédiate après ajout d'un produit
+        setTimeout(() => {
+            if (autoSyncEnabled && googleDriveConnected && sharedFolderId && !isLoadingFromDrive && !isSaving) {
+                console.log('💾 Sauvegarde immédiate après ajout de produit');
+                sauvegarderSurDrive();
+            }
+        }, 500);
     };
 
     const modifierProduitListe = (index) => {
@@ -605,6 +613,14 @@ const PhytoTracker = () => {
         
         setProduitsDisponibles(nouveauxProduits);
         showToast('Produit modifié');
+        
+        // ⭐ Sauvegarde immédiate après modification d'un produit
+        setTimeout(() => {
+            if (autoSyncEnabled && googleDriveConnected && sharedFolderId && !isLoadingFromDrive && !isSaving) {
+                console.log('💾 Sauvegarde immédiate après modification de produit');
+                sauvegarderSurDrive();
+            }
+        }, 500);
     };
 
     const supprimerProduitListe = (index) => {
@@ -612,6 +628,14 @@ const PhytoTracker = () => {
         if (confirm(`Supprimer le produit "${produit.nom}" ?`)) {
             setProduitsDisponibles(produitsDisponibles.filter((_, i) => i !== index));
             showToast(`Produit "${produit.nom}" supprimé`);
+            
+            // ⭐ Sauvegarde immédiate après suppression d'un produit
+            setTimeout(() => {
+                if (autoSyncEnabled && googleDriveConnected && sharedFolderId && !isLoadingFromDrive && !isSaving) {
+                    console.log('💾 Sauvegarde immédiate après suppression de produit');
+                    sauvegarderSurDrive();
+                }
+            }, 500);
         }
     };
     
@@ -1330,13 +1354,13 @@ const PhytoTracker = () => {
         // ========== FEUILLE 1: TRAITEMENTS DETAILLES ==========
         csv += 'REGISTRE PHYTOSANITAIRE - ANNEE ' + annee + '\n';
         csv += 'TRAITEMENTS DETAILLES PAR PARCELLE\n\n';
-        csv += 'Parcelle;Ilot;Surface (ha);Type;N° Traitement;Date;Produit;N° Lot;Dose;Unite;IFT;Operateur;Machine;Debit\n';
+        csv += 'Parcelle;Ilot;Surface (ha);Type;N° Traitement;Date;Produit;N° Lot;Dose;Unite;IFT;Operateur;Machine;Debit;Commentaire\n';
         
         parcelles.forEach(p => {
             if (p.traitements.length === 0) {
                 csv += escapeCSV(p.nom) + ';' + 
                        escapeCSV(p.ilot) + ';' + 
-                       escapeCSV(p.surface || '') + ';;;;;;;;;;;;\n';
+                       escapeCSV(p.surface || '') + ';;;;;;;;;;\n';
             } else {
                 p.traitements.forEach((t, tIdx) => {
                     const typeTexte = t.type === 'desherbage' ? 'Désherbage' : 'Traitement';
@@ -1357,7 +1381,8 @@ const PhytoTracker = () => {
                                escapeCSV(ift > 0 ? ift.toFixed(3) : '') + ';' +
                                escapeCSV(pIdx === 0 ? t.operateur1 : '') + ';' +
                                escapeCSV(pIdx === 0 ? t.machine : '') + ';' +
-                               escapeCSV(pIdx === 0 ? t.debit : '') + '\n';
+                               escapeCSV(pIdx === 0 ? t.debit : '') + ';' +
+                               escapeCSV(pIdx === 0 ? (t.commentaire || '') : '') + '\n';
                     });
                 });
             }
