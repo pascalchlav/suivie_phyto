@@ -109,6 +109,12 @@
             border-left: 4px solid #10b981;
         }
         
+        .toast.warning {
+            background: #fef3c7;
+            color: #92400e;
+            border-left: 4px solid #f59e0b;
+        }
+        
         @keyframes slideIn {
             from {
                 transform: translateX(400px);
@@ -704,47 +710,148 @@ const PhytoTracker = () => {
     };
 
     // Initialiser le dossier partagé
-    const initialiserDossierPartage = async (token) => {
+   const initialiserDossierPartage = async (token) => {
         try {
-            // Chercher si le dossier existe déjà
-            const searchResponse = await fetch(
-                `https://www.googleapis.com/drive/v3/files?q=name='${SHARED_FOLDER_NAME}' and mimeType='application/vnd.google-apps.folder' and trashed=false`,
+            console.log('🔍 ═══════════════════════════════════════════════════');
+            console.log('🔍 RECHERCHE DU DOSSIER PARTAGÉ');
+            console.log('🔍 ═══════════════════════════════════════════════════');
+            
+            // 1️⃣ ÉTAPE 1 : Chercher dans "Partagés avec moi"
+            console.log('1️⃣ Recherche dans "Partagés avec moi"...');
+            const searchSharedResponse = await fetch(
+                `https://www.googleapis.com/drive/v3/files?` +
+                `q=name='${SHARED_FOLDER_NAME}' ` +
+                `and mimeType='application/vnd.google-apps.folder' ` +
+                `and sharedWithMe=true ` +
+                `and trashed=false` +
+                `&fields=files(id,name,owners,capabilities)`,
                 {
                     headers: { 'Authorization': `Bearer ${token}` }
                 }
             );
             
-            const searchData = await searchResponse.json();
+            const sharedData = await searchSharedResponse.json();
+            console.log('📋 Résultats "Partagés avec moi":', sharedData);
             
-            if (searchData.files && searchData.files.length > 0) {
-                // Dossier trouvé
-                setSharedFolderId(searchData.files[0].id);
-                console.log('Dossier partagé trouvé:', searchData.files[0].id);
-            } else {
-                // Créer le dossier
-                const createResponse = await fetch(
-                    'https://www.googleapis.com/drive/v3/files',
-                    {
-                        method: 'POST',
-                        headers: {
-                            'Authorization': `Bearer ${token}`,
-                            'Content-Type': 'application/json'
-                        },
-                        body: JSON.stringify({
-                            name: SHARED_FOLDER_NAME,
-                            mimeType: 'application/vnd.google-apps.folder'
-                        })
-                    }
-                );
-                
-                const createData = await createResponse.json();
-                setSharedFolderId(createData.id);
-                console.log('Dossier partagé créé:', createData.id);
-                
-                showToast('📁 Dossier partagé créé dans Google Drive');
+            if (sharedData.files && sharedData.files.length > 0) {
+                // ✅ Dossier partagé trouvé !
+                const folder = sharedData.files[0];
+                setSharedFolderId(folder.id);
+                console.log('✅ ═══════════════════════════════════════════════════');
+                console.log('✅ DOSSIER PARTAGÉ TROUVÉ !');
+                console.log('✅ ID:', folder.id);
+                console.log('✅ Nom:', folder.name);
+                console.log('✅ Propriétaire:', folder.owners?.[0]?.emailAddress || 'Inconnu');
+                console.log('✅ ═══════════════════════════════════════════════════');
+                showToast('✅ Connecté au dossier partagé !', 'success');
+                return;
             }
+            
+            console.log('⚠️ Aucun dossier partagé trouvé');
+            
+            // 2️⃣ ÉTAPE 2 : Chercher dans mon Drive personnel
+            console.log('2️⃣ Recherche dans mon Drive personnel...');
+            const searchMyDriveResponse = await fetch(
+                `https://www.googleapis.com/drive/v3/files?` +
+                `q=name='${SHARED_FOLDER_NAME}' ` +
+                `and mimeType='application/vnd.google-apps.folder' ` +
+                `and 'me' in owners ` +
+                `and trashed=false` +
+                `&fields=files(id,name,webViewLink)`,
+                {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                }
+            );
+            
+            const myData = await searchMyDriveResponse.json();
+            console.log('📋 Résultats mon Drive:', myData);
+            
+            if (myData.files && myData.files.length > 0) {
+                // ✅ Mon propre dossier trouvé
+                const folder = myData.files[0];
+                setSharedFolderId(folder.id);
+                console.log('✅ ═══════════════════════════════════════════════════');
+                console.log('✅ VOTRE DOSSIER TROUVÉ (non partagé)');
+                console.log('✅ ID:', folder.id);
+                console.log('✅ URL:', folder.webViewLink);
+                console.log('✅ ═══════════════════════════════════════════════════');
+                
+                showToast('📁 Dossier trouvé - Pensez à le partager avec votre équipe !', 'warning');
+                
+                // Afficher l'URL et les instructions après 2 secondes
+                setTimeout(() => {
+                    const message = 
+                        '📋 INSTRUCTIONS DE PARTAGE\n\n' +
+                        `Votre dossier "${SHARED_FOLDER_NAME}" existe mais n'est pas encore partagé.\n\n` +
+                        `Pour partager avec votre équipe :\n\n` +
+                        `1. Allez sur Google Drive\n` +
+                        `2. Trouvez le dossier "${SHARED_FOLDER_NAME}"\n` +
+                        `3. Clic droit > Partager\n` +
+                        `4. Ajoutez les emails de votre équipe\n` +
+                        `5. Donnez l'accès "Éditeur"\n\n` +
+                        `URL du dossier :\n${folder.webViewLink}\n\n` +
+                        `ID du dossier (pour support) :\n${folder.id}`;
+                    
+                    alert(message);
+                }, 2000);
+                
+                return;
+            }
+            
+            console.log('⚠️ Aucun dossier trouvé dans mon Drive');
+            
+            // 3️⃣ ÉTAPE 3 : Créer le dossier (seulement pour le premier utilisateur)
+            console.log('3️⃣ Création d\'un nouveau dossier...');
+            const createResponse = await fetch(
+                'https://www.googleapis.com/drive/v3/files',
+                {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        name: SHARED_FOLDER_NAME,
+                        mimeType: 'application/vnd.google-apps.folder'
+                    })
+                }
+            );
+            
+            const createData = await createResponse.json();
+            setSharedFolderId(createData.id);
+            
+            console.log('✅ ═══════════════════════════════════════════════════');
+            console.log('✅ NOUVEAU DOSSIER CRÉÉ !');
+            console.log('✅ ID:', createData.id);
+            console.log('✅ Nom:', createData.name);
+            console.log('✅ ═══════════════════════════════════════════════════');
+            
+            showToast('📁 Nouveau dossier créé ! Partagez-le avec votre équipe.', 'success');
+            
+            // Afficher les instructions de partage
+            setTimeout(() => {
+                const message = 
+                    '🎉 DOSSIER CRÉÉ AVEC SUCCÈS !\n\n' +
+                    `Un nouveau dossier "${SHARED_FOLDER_NAME}" a été créé dans votre Google Drive.\n\n` +
+                    `⚠️ IMPORTANT : Partagez ce dossier avec votre équipe !\n\n` +
+                    `ÉTAPES :\n` +
+                    `1. Allez sur Google Drive\n` +
+                    `2. Trouvez le dossier "${SHARED_FOLDER_NAME}"\n` +
+                    `3. Clic droit > Partager\n` +
+                    `4. Ajoutez les emails de votre équipe\n` +
+                    `5. Donnez l'accès "Éditeur"\n\n` +
+                    `ID du dossier (copiez-le) :\n${createData.id}\n\n` +
+                    `URL directe :\n` +
+                    `https://drive.google.com/drive/folders/${createData.id}`;
+                
+                alert(message);
+            }, 1500);
+            
         } catch (error) {
-            console.error('Erreur initialisation dossier:', error);
+            console.error('❌ ═══════════════════════════════════════════════════');
+            console.error('❌ ERREUR INITIALISATION DOSSIER');
+            console.error('❌ Erreur:', error);
+            console.error('❌ ═══════════════════════════════════════════════════');
             showToast('Erreur lors de l\'initialisation du dossier', 'error');
         }
     };
